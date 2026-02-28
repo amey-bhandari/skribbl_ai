@@ -1,4 +1,5 @@
 import {
+  type AiDifficulty,
   MAX_PLAYERS,
   ROOM_CODE_LENGTH,
   type PlayerState,
@@ -24,6 +25,7 @@ export class RoomManager {
     const room: RoomRuntime = {
       roomCode,
       hostPlayerId: hostPlayer.id,
+      aiDifficulty: "easy",
       players: [hostPlayer],
       score: this.createInitialScore(),
       phase: "lobby",
@@ -91,6 +93,11 @@ export class RoomManager {
 
   resetScore(room: RoomRuntime): void {
     room.score = this.createInitialScore();
+    this.touchRoom(room);
+  }
+
+  setAiDifficulty(room: RoomRuntime, difficulty: AiDifficulty): void {
+    room.aiDifficulty = difficulty;
     this.touchRoom(room);
   }
 
@@ -204,6 +211,7 @@ export class RoomManager {
     return {
       roomCode: room.roomCode,
       hostPlayerId: room.hostPlayerId,
+      aiDifficulty: room.aiDifficulty,
       players: room.players.map((player) => this.projectPlayer(player)),
       score: { ...room.score },
       phase: room.phase,

@@ -388,6 +388,55 @@ button:disabled {
   white-space: nowrap;
 }
 
+.difficulty-panel {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0 20px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 3px solid var(--ink);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 4px 4px 0 rgba(17, 17, 17, 0.95);
+}
+
+.difficulty-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.difficulty-option {
+  display: grid;
+  gap: 8px;
+  text-align: left;
+  padding: 16px;
+  border-radius: 20px;
+  border: 3px solid rgba(17, 17, 17, 0.92);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 4px 4px 0 rgba(17, 17, 17, 0.95);
+}
+
+.difficulty-option strong,
+.difficulty-option span,
+.difficulty-option small {
+  display: block;
+}
+
+.difficulty-option span {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.difficulty-option small {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.difficulty-option.is-active {
+  background: rgba(41, 208, 223, 0.18);
+}
+
 .game-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(320px, 430px);
@@ -805,6 +854,10 @@ button:disabled {
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
+  }
+
+  .difficulty-grid {
+    grid-template-columns: 1fr;
   }
 }
 

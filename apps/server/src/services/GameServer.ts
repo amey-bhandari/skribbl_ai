@@ -100,6 +100,9 @@ export class GameServer {
       case "room:start":
         this.handleRoomStart(socket);
         break;
+      case "room:set_ai_difficulty":
+        this.handleAiDifficultyChange(socket, event.difficulty);
+        break;
       case "canvas:stroke_start":
         this.handleStrokeStart(socket, event);
         break;
@@ -174,6 +177,26 @@ export class GameServer {
     }
 
     this.roomManager.resetScore(room);
+    this.broadcastRoomState(room);
+  }
+
+  private handleAiDifficultyChange(socket: Socket, difficulty: "easy" | "hard"): void {
+    const room = this.requireRoom(socket.id);
+    if (!room) {
+      return;
+    }
+
+    if (room.hostPlayerId !== socket.id) {
+      this.sendError(socket, "Only the host can change AI difficulty");
+      return;
+    }
+
+    if (room.phase === "round") {
+      this.sendError(socket, "Change AI difficulty between rounds");
+      return;
+    }
+
+    this.roomManager.setAiDifficulty(room, difficulty);
     this.broadcastRoomState(room);
   }
 
@@ -477,23 +500,18 @@ export class GameServer {
       const labels = await this.aiProvider.detectLabels({
         imageBuffer,
         strokes,
-        candidates: this.wordBank.getWords()
+        candidates: this.wordBank.getWords(),
+        aiDifficulty: room.aiDifficulty
       });
       const activeRoom = this.roomManager.getRoom(roomCode);
       if (!activeRoom || !activeRoom.currentRound || activeRoom.currentRound.state.roundId !== round.state.roundId) {
         return;
       }
 
-      const match = this.guessEvaluator.matchVisionLabels(
-        labels,
-        activeRoom.currentRound.word,
-        appConfig.VISION_MIN_CONFIDENCE
-      );
-      const publicTopGuessMatch =
+      const resolvedMatch =
         this.aiProvider.name === "local_doodle"
           ? this.matchPublicTopGuess(labels, activeRoom.currentRound.word)
-          : undefined;
-      const resolvedMatch = match ?? publicTopGuessMatch;
+          : this.guessEvaluator.matchVisionLabels(labels, activeRoom.currentRound.word, appConfig.VISION_MIN_CONFIDENCE);
 
       const batch: AiGuessBatch = {
         bucketIndex,
@@ -513,6 +531,7 @@ export class GameServer {
         roomCode,
         bucketIndex,
         provider: this.aiProvider.name,
+        difficulty: room.aiDifficulty,
         latencyMs: Date.now() - startedAt,
         topLabels: labels.map((label) => `${label.label}:${label.confidence.toFixed(3)}`).join(", ")
       });

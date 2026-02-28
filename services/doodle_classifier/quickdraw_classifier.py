@@ -10,7 +10,10 @@ from typing import Iterable
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 WORD_BANK_PATH = ROOT_DIR / "apps" / "server" / "src" / "data" / "word-bank.json"
-PROTOTYPE_PATH = ROOT_DIR / "services" / "doodle_classifier" / "data" / "quickdraw_prototypes.json"
+ALL_CATEGORIES_PATH = ROOT_DIR / "services" / "doodle_classifier" / "data" / "quickdraw_all_categories.txt"
+FOCUSED_PROTOTYPE_PATH = ROOT_DIR / "services" / "doodle_classifier" / "data" / "quickdraw_prototypes.json"
+FULL_PROTOTYPE_PATH = ROOT_DIR / "services" / "doodle_classifier" / "data" / "quickdraw_prototypes_full.json"
+PROTOTYPE_PATH = FOCUSED_PROTOTYPE_PATH
 DEFAULT_SAMPLES_PER_LABEL = 32
 RASTER_SIZE = 64
 RASTER_PADDING = 5
@@ -41,16 +44,26 @@ def load_word_bank_labels(word_bank_path: Path = WORD_BANK_PATH) -> list[str]:
     return labels
 
 
+def load_label_file(labels_path: Path) -> list[str]:
+    with labels_path.open("r", encoding="utf-8") as handle:
+        return [line.strip() for line in handle if line.strip()]
+
+
+def load_all_quickdraw_labels(labels_path: Path = ALL_CATEGORIES_PATH) -> list[str]:
+    return load_label_file(labels_path)
+
+
 def ensure_prototypes(
     prototype_path: Path = PROTOTYPE_PATH,
+    labels: Iterable[str] | None = None,
     word_bank_path: Path = WORD_BANK_PATH,
     samples_per_label: int = DEFAULT_SAMPLES_PER_LABEL,
 ) -> Path:
     if prototype_path.exists():
         return prototype_path
 
-    labels = load_word_bank_labels(word_bank_path)
-    build_and_save_prototypes(labels, prototype_path=prototype_path, samples_per_label=samples_per_label)
+    resolved_labels = list(labels) if labels is not None else load_word_bank_labels(word_bank_path)
+    build_and_save_prototypes(resolved_labels, prototype_path=prototype_path, samples_per_label=samples_per_label)
     return prototype_path
 
 
@@ -66,13 +79,16 @@ class QuickDrawPrototypeClassifier:
         if not strokes:
             return []
 
-        candidate_labels = []
-        for entry in candidates if isinstance(candidates, list) else []:
-            if not isinstance(entry, dict):
-                continue
-            label = str(entry.get("label", "")).strip()
-            if label and label in self.prototypes:
-                candidate_labels.append(label)
+        candidate_labels: list[str] = []
+        if isinstance(candidates, list):
+            for entry in candidates:
+                if not isinstance(entry, dict):
+                    continue
+                label = str(entry.get("label", "")).strip()
+                if label and label in self.prototypes:
+                    candidate_labels.append(label)
+        else:
+            candidate_labels = list(self.prototypes.keys())
 
         # Preserve order while removing duplicates.
         candidate_labels = list(dict.fromkeys(candidate_labels))

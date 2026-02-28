@@ -6,10 +6,13 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from quickdraw_classifier import (
+    ALL_CATEGORIES_PATH,
     DEFAULT_SAMPLES_PER_LABEL,
-    PROTOTYPE_PATH,
+    FOCUSED_PROTOTYPE_PATH,
+    FULL_PROTOTYPE_PATH,
     QuickDrawPrototypeClassifier,
     WORD_BANK_PATH,
+    load_all_quickdraw_labels,
     ensure_prototypes,
 )
 
@@ -17,8 +20,16 @@ HOST = os.environ.get("DOODLE_SERVICE_HOST", "127.0.0.1")
 PORT = int(os.environ.get("DOODLE_SERVICE_PORT", "8008"))
 SAMPLES_PER_LABEL = int(os.environ.get("DOODLE_SAMPLES_PER_LABEL", str(DEFAULT_SAMPLES_PER_LABEL)))
 
-ensure_prototypes(PROTOTYPE_PATH, WORD_BANK_PATH, samples_per_label=SAMPLES_PER_LABEL)
-CLASSIFIER = QuickDrawPrototypeClassifier(PROTOTYPE_PATH)
+ensure_prototypes(FOCUSED_PROTOTYPE_PATH, word_bank_path=WORD_BANK_PATH, samples_per_label=SAMPLES_PER_LABEL)
+ensure_prototypes(
+    FULL_PROTOTYPE_PATH,
+    labels=load_all_quickdraw_labels(ALL_CATEGORIES_PATH),
+    samples_per_label=SAMPLES_PER_LABEL,
+)
+CLASSIFIERS = {
+    "easy": QuickDrawPrototypeClassifier(FULL_PROTOTYPE_PATH),
+    "hard": QuickDrawPrototypeClassifier(FOCUSED_PROTOTYPE_PATH),
+}
 
 
 class DoodleHandler(BaseHTTPRequestHandler):
@@ -34,9 +45,14 @@ class DoodleHandler(BaseHTTPRequestHandler):
             {
                 "status": "ok",
                 "backend": "quickdraw_prototype_v1",
-                "prototypePath": str(CLASSIFIER.prototype_path),
-                "labelCount": len(CLASSIFIER.prototypes),
-                "metadata": CLASSIFIER.metadata,
+                "difficulties": {
+                    difficulty: {
+                        "prototypePath": str(classifier.prototype_path),
+                        "labelCount": len(classifier.prototypes),
+                        "metadata": classifier.metadata,
+                    }
+                    for difficulty, classifier in CLASSIFIERS.items()
+                },
             },
         )
 
@@ -58,8 +74,11 @@ class DoodleHandler(BaseHTTPRequestHandler):
             return
 
         top_k = payload.get("topK", 5)
+        difficulty = payload.get("difficulty", "hard")
+        classifier = CLASSIFIERS["easy"] if difficulty == "easy" else CLASSIFIERS["hard"]
+        candidates = None if difficulty == "easy" else payload.get("candidates")
         try:
-            labels = CLASSIFIER.predict(payload.get("strokes"), payload.get("candidates"), int(top_k))
+            labels = classifier.predict(payload.get("strokes"), candidates, int(top_k))
         except ValueError as error:
             self.respond(HTTPStatus.UNPROCESSABLE_ENTITY, {"error": str(error)})
             return
@@ -71,6 +90,7 @@ class DoodleHandler(BaseHTTPRequestHandler):
             HTTPStatus.OK,
             {
                 "backend": "quickdraw_prototype_v1",
+                "difficulty": difficulty,
                 "labels": labels,
             },
         )

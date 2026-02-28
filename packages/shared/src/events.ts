@@ -1,4 +1,5 @@
 import type {
+  AiDifficulty,
   AiGuessBatch,
   GameConfig,
   GuessFeedEntry,
@@ -52,6 +53,11 @@ export type ResetScoreEvent = {
   type: "room:reset_score";
 };
 
+export type SetAiDifficultyEvent = {
+  type: "room:set_ai_difficulty";
+  difficulty: AiDifficulty;
+};
+
 export type ClientToServerEvent =
   | RoomCreateEvent
   | RoomJoinEvent
@@ -60,7 +66,8 @@ export type ClientToServerEvent =
   | StrokePointEvent
   | StrokeEndEvent
   | GuessSubmitEvent
-  | ResetScoreEvent;
+  | ResetScoreEvent
+  | SetAiDifficultyEvent;
 
 export type RoomStateEvent = {
   type: "room:state";
@@ -147,4 +154,3 @@ export type ServerToClientEvent =
 
 export type ClientEventName = "client:event";
 export type ServerEventName = "server:event";
-

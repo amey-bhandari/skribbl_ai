@@ -4,6 +4,7 @@ import {
   GUESS_INTERVAL_SECONDS,
   INTERMISSION_SECONDS,
   ROUND_DURATION_SECONDS,
+  type AiDifficulty,
   type GameConfig,
   type RoomState,
   type ServerToClientEvent,
@@ -67,6 +68,26 @@ const initialState: ClientState = {
   prompt: null,
   error: null,
   intermissionEndsAt: null
+};
+
+const AI_DIFFICULTY_OPTIONS: Record<
+  AiDifficulty,
+  {
+    label: string;
+    summary: string;
+    detail: string;
+  }
+> = {
+  easy: {
+    label: "Easy AI",
+    summary: "Wide 345-label Quick, Draw! model",
+    detail: "More possible labels gives the AI more ways to miss the right one."
+  },
+  hard: {
+    label: "Hard AI",
+    summary: "Focused 86-label game model",
+    detail: "The AI only considers the curated game prompts, so it is much harder to fool."
+  }
 };
 
 function reducer(state: ClientState, action: ClientAction): ClientState {
@@ -353,6 +374,7 @@ export default function App() {
             isDrawer={Boolean(isDrawer)}
             prompt={state.prompt}
             phase={room.phase}
+            aiDifficulty={room.aiDifficulty}
           />
           {state.error ? <p className="error-banner">{state.error}</p> : null}
 
@@ -368,6 +390,37 @@ export default function App() {
                     {copyStatus === "copied" ? "Copied" : copyStatus === "failed" ? "Copy failed" : "Copy code"}
                   </button>
                 </div>
+                <section className="difficulty-panel">
+                  <div className="panel-head">
+                    <div>
+                      <h3>AI difficulty</h3>
+                      <p className="panel-note">{AI_DIFFICULTY_OPTIONS[room.aiDifficulty].summary}</p>
+                    </div>
+                    <span>{room.aiDifficulty === "hard" ? "Focused model" : "Wide model"}</span>
+                  </div>
+                  <div className="difficulty-grid">
+                    {(Object.entries(AI_DIFFICULTY_OPTIONS) as Array<
+                      [AiDifficulty, (typeof AI_DIFFICULTY_OPTIONS)[AiDifficulty]]
+                    >).map(([difficulty, option]) => (
+                      <button
+                        key={difficulty}
+                        type="button"
+                        className={`difficulty-option ${room.aiDifficulty === difficulty ? "is-active" : ""}`}
+                        disabled={!isHost}
+                        onClick={() =>
+                          socket.emit("client:event", {
+                            type: "room:set_ai_difficulty",
+                            difficulty
+                          })
+                        }
+                      >
+                        <strong>{option.label}</strong>
+                        <span>{option.summary}</span>
+                        <small>{option.detail}</small>
+                      </button>
+                    ))}
+                  </div>
+                </section>
                 <div className="action-row">
                   <button type="button" className="primary-button" disabled={!isHost} onClick={() => socket.emit("client:event", { type: "room:start" })}>
                     Start game

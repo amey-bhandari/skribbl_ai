@@ -13,6 +13,7 @@
     "dev:server:local-ai": "cross-env AI_PROVIDER=local_doodle npm run dev -w @skribbl-ai/server",
     "dev:local-ai": "concurrently -n doodle,server,web -c magenta,cyan,yellow \"npm:dev:doodle-service\" \"npm:dev:server:local-ai\" \"npm:dev -w @skribbl-ai/web\"",
     "doodle:build": "python services/doodle_classifier/scripts/build_prototypes.py",
+    "doodle:build:full": "python services/doodle_classifier/scripts/build_prototypes.py --label-source quickdraw-all",
     "build": "npm run build -w @skribbl-ai/shared && npm run build -w @skribbl-ai/server && npm run build -w @skribbl-ai/web",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present"

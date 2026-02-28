@@ -1,9 +1,10 @@
-import type { StrokeRecord, VisionLabel, WordEntry } from "@skribbl-ai/shared";
+import type { AiDifficulty, StrokeRecord, VisionLabel, WordEntry } from "@skribbl-ai/shared";
 
 export type AiProviderInput = {
   imageBuffer: Buffer;
   strokes: StrokeRecord[];
   candidates: WordEntry[];
+  aiDifficulty: AiDifficulty;
 };
 
 export interface AiProvider {

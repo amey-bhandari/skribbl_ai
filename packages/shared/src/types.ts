@@ -3,6 +3,8 @@ export type ScoreState = {
   ai: number;
 };
 
+export type AiDifficulty = "easy" | "hard";
+
 export type PlayerState = {
   id: string;
   name: string;
@@ -84,6 +86,7 @@ export type WordEntry = {
 export type RoomState = {
   roomCode: string;
   hostPlayerId: string;
+  aiDifficulty: AiDifficulty;
   players: PlayerState[];
   score: ScoreState;
   phase: RoomPhase;

@@ -1,4 +1,5 @@
 import type {
+  AiDifficulty,
   AiGuessBatch,
   GuessFeedEntry,
   PlayerState,
@@ -27,6 +28,7 @@ export type RoundRuntime = {
 export type RoomRuntime = {
   roomCode: string;
   hostPlayerId: string;
+  aiDifficulty: AiDifficulty;
   players: PlayerRuntime[];
   score: ScoreState;
   phase: RoomPhase;

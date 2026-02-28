@@ -10,10 +10,14 @@ if str(SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(SERVICE_DIR))
 
 from quickdraw_classifier import (  # noqa: E402
+    ALL_CATEGORIES_PATH,
     DEFAULT_SAMPLES_PER_LABEL,
-    PROTOTYPE_PATH,
+    FOCUSED_PROTOTYPE_PATH,
+    FULL_PROTOTYPE_PATH,
     WORD_BANK_PATH,
     build_and_save_prototypes,
+    load_all_quickdraw_labels,
+    load_label_file,
     load_word_bank_labels,
 )
 
@@ -29,7 +33,7 @@ def main() -> int:
     parser.add_argument(
         "--prototype-path",
         type=Path,
-        default=PROTOTYPE_PATH,
+        default=FOCUSED_PROTOTYPE_PATH,
         help="Output path for the generated prototype JSON",
     )
     parser.add_argument(
@@ -38,9 +42,27 @@ def main() -> int:
         default=WORD_BANK_PATH,
         help="Path to the server word bank JSON file",
     )
+    parser.add_argument(
+        "--labels-file",
+        type=Path,
+        help="Optional explicit label file to use instead of the word bank",
+    )
+    parser.add_argument(
+        "--label-source",
+        choices=("word-bank", "quickdraw-all"),
+        default="word-bank",
+        help="Named label source to build from",
+    )
     args = parser.parse_args()
 
-    labels = load_word_bank_labels(args.word_bank_path)
+    if args.labels_file:
+        labels = load_label_file(args.labels_file)
+    elif args.label_source == "quickdraw-all":
+        labels = load_all_quickdraw_labels(ALL_CATEGORIES_PATH)
+        if args.prototype_path == FOCUSED_PROTOTYPE_PATH:
+            args.prototype_path = FULL_PROTOTYPE_PATH
+    else:
+        labels = load_word_bank_labels(args.word_bank_path)
     build_and_save_prototypes(labels, prototype_path=args.prototype_path, samples_per_label=args.samples_per_label)
     return 0
 

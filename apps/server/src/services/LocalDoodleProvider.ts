@@ -35,6 +35,7 @@ export class LocalDoodleProvider implements AiProvider {
         },
         body: JSON.stringify({
           topK: this.options.maxLabels,
+          difficulty: input.aiDifficulty,
           strokes: input.strokes,
           candidates: input.candidates.map((candidate) => ({
             label: candidate.answer,
