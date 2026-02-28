@@ -1,0 +1,14 @@
+export const MAX_PLAYERS = 8;
+export const MIN_PLAYERS = 2;
+export const ROOM_CODE_LENGTH = 5;
+export const CANVAS_SIZE = 512;
+export const ROUND_DURATION_SECONDS = 30;
+export const GUESS_INTERVAL_SECONDS = 5;
+export const INTERMISSION_SECONDS = 5;
+export const ROOM_IDLE_TTL_MINUTES = 30;
+export const MAX_STROKE_POINTS = 2_048;
+export const MAX_GUESS_LENGTH = 64;
+export const VISION_MIN_CONFIDENCE = 0.7;
+export const MAX_VISION_LABELS = 5;
+export const VISION_TIMEOUT_MS = 8_000;
+export const MAX_STROKE_EVENTS_PER_SECOND = 90;

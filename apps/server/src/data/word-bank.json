@@ -1,0 +1,604 @@
+[
+  {
+    "id": "alarm-clock",
+    "answer": "alarm clock",
+    "aliases": ["clock radio"],
+    "category": "home",
+    "difficulty": "easy"
+  },
+  {
+    "id": "apple",
+    "answer": "apple",
+    "aliases": [],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "backpack",
+    "answer": "backpack",
+    "aliases": [],
+    "category": "travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "banana",
+    "answer": "banana",
+    "aliases": [],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "bandage",
+    "answer": "bandage",
+    "aliases": ["band aid"],
+    "category": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "basket",
+    "answer": "basket",
+    "aliases": [],
+    "category": "home",
+    "difficulty": "easy"
+  },
+  {
+    "id": "bicycle",
+    "answer": "bicycle",
+    "aliases": ["bike"],
+    "category": "transport",
+    "difficulty": "easy"
+  },
+  {
+    "id": "broom",
+    "answer": "broom",
+    "aliases": [],
+    "category": "home",
+    "difficulty": "easy"
+  },
+  {
+    "id": "bucket",
+    "answer": "bucket",
+    "aliases": ["pail"],
+    "category": "home",
+    "difficulty": "easy"
+  },
+  {
+    "id": "cactus",
+    "answer": "cactus",
+    "aliases": [],
+    "category": "nature",
+    "difficulty": "easy"
+  },
+  {
+    "id": "calculator",
+    "answer": "calculator",
+    "aliases": [],
+    "category": "school",
+    "difficulty": "easy"
+  },
+  {
+    "id": "calendar",
+    "answer": "calendar",
+    "aliases": [],
+    "category": "office",
+    "difficulty": "easy"
+  },
+  {
+    "id": "camera",
+    "answer": "camera",
+    "aliases": [],
+    "category": "electronics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "candle",
+    "answer": "candle",
+    "aliases": [],
+    "category": "home",
+    "difficulty": "easy"
+  },
+  {
+    "id": "canoe",
+    "answer": "canoe",
+    "aliases": [],
+    "category": "outdoors",
+    "difficulty": "medium"
+  },
+  {
+    "id": "carrot",
+    "answer": "carrot",
+    "aliases": [],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "castle",
+    "answer": "castle",
+    "aliases": [],
+    "category": "architecture",
+    "difficulty": "medium"
+  },
+  {
+    "id": "chair",
+    "answer": "chair",
+    "aliases": [],
+    "category": "home",
+    "difficulty": "easy"
+  },
+  {
+    "id": "compass",
+    "answer": "compass",
+    "aliases": [],
+    "category": "travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "cookie",
+    "answer": "cookie",
+    "aliases": ["biscuit"],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "crayon",
+    "answer": "crayon",
+    "aliases": [],
+    "category": "school",
+    "difficulty": "easy"
+  },
+  {
+    "id": "crown",
+    "answer": "crown",
+    "aliases": [],
+    "category": "misc",
+    "difficulty": "easy"
+  },
+  {
+    "id": "dog",
+    "answer": "dog",
+    "aliases": [],
+    "category": "animal",
+    "difficulty": "easy"
+  },
+  {
+    "id": "donut",
+    "answer": "donut",
+    "aliases": ["doughnut"],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "envelope",
+    "answer": "envelope",
+    "aliases": [],
+    "category": "office",
+    "difficulty": "easy"
+  },
+  {
+    "id": "eraser",
+    "answer": "eraser",
+    "aliases": [],
+    "category": "school",
+    "difficulty": "easy"
+  },
+  {
+    "id": "fan",
+    "answer": "fan",
+    "aliases": [],
+    "category": "home",
+    "difficulty": "easy"
+  },
+  {
+    "id": "feather",
+    "answer": "feather",
+    "aliases": [],
+    "category": "nature",
+    "difficulty": "easy"
+  },
+  {
+    "id": "fence",
+    "answer": "fence",
+    "aliases": [],
+    "category": "outdoors",
+    "difficulty": "easy"
+  },
+  {
+    "id": "flashlight",
+    "answer": "flashlight",
+    "aliases": ["torch"],
+    "category": "tools",
+    "difficulty": "easy"
+  },
+  {
+    "id": "fork",
+    "answer": "fork",
+    "aliases": [],
+    "category": "kitchen",
+    "difficulty": "easy"
+  },
+  {
+    "id": "frying-pan",
+    "answer": "frying pan",
+    "aliases": ["pan", "skillet"],
+    "category": "kitchen",
+    "difficulty": "easy"
+  },
+  {
+    "id": "garden-hose",
+    "answer": "garden hose",
+    "aliases": ["hose"],
+    "category": "outdoors",
+    "difficulty": "easy"
+  },
+  {
+    "id": "golf-club",
+    "answer": "golf club",
+    "aliases": [],
+    "category": "sports",
+    "difficulty": "medium"
+  },
+  {
+    "id": "guitar",
+    "answer": "guitar",
+    "aliases": [],
+    "category": "music",
+    "difficulty": "easy"
+  },
+  {
+    "id": "hammer",
+    "answer": "hammer",
+    "aliases": [],
+    "category": "tools",
+    "difficulty": "easy"
+  },
+  {
+    "id": "helmet",
+    "answer": "helmet",
+    "aliases": [],
+    "category": "sports",
+    "difficulty": "easy"
+  },
+  {
+    "id": "hourglass",
+    "answer": "hourglass",
+    "aliases": ["sand timer"],
+    "category": "misc",
+    "difficulty": "medium"
+  },
+  {
+    "id": "house",
+    "answer": "house",
+    "aliases": ["home"],
+    "category": "architecture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "ice-cream",
+    "answer": "ice cream",
+    "aliases": ["icecream"],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "jacket",
+    "answer": "jacket",
+    "aliases": ["coat"],
+    "category": "clothing",
+    "difficulty": "easy"
+  },
+  {
+    "id": "key",
+    "answer": "key",
+    "aliases": [],
+    "category": "misc",
+    "difficulty": "easy"
+  },
+  {
+    "id": "ladder",
+    "answer": "ladder",
+    "aliases": [],
+    "category": "tools",
+    "difficulty": "easy"
+  },
+  {
+    "id": "lantern",
+    "answer": "lantern",
+    "aliases": [],
+    "category": "outdoors",
+    "difficulty": "easy"
+  },
+  {
+    "id": "lighthouse",
+    "answer": "lighthouse",
+    "aliases": [],
+    "category": "architecture",
+    "difficulty": "medium"
+  },
+  {
+    "id": "lipstick",
+    "answer": "lipstick",
+    "aliases": [],
+    "category": "fashion",
+    "difficulty": "easy"
+  },
+  {
+    "id": "mailbox",
+    "answer": "mailbox",
+    "aliases": [],
+    "category": "outdoors",
+    "difficulty": "easy"
+  },
+  {
+    "id": "map",
+    "answer": "map",
+    "aliases": [],
+    "category": "travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "marker",
+    "answer": "marker",
+    "aliases": [],
+    "category": "school",
+    "difficulty": "easy"
+  },
+  {
+    "id": "megaphone",
+    "answer": "megaphone",
+    "aliases": [],
+    "category": "misc",
+    "difficulty": "medium"
+  },
+  {
+    "id": "microphone",
+    "answer": "microphone",
+    "aliases": ["mic"],
+    "category": "music",
+    "difficulty": "easy"
+  },
+  {
+    "id": "mug",
+    "answer": "mug",
+    "aliases": ["coffee mug"],
+    "category": "kitchen",
+    "difficulty": "easy"
+  },
+  {
+    "id": "mushroom",
+    "answer": "mushroom",
+    "aliases": [],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "onion",
+    "answer": "onion",
+    "aliases": [],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "paintbrush",
+    "answer": "paintbrush",
+    "aliases": ["paint brush"],
+    "category": "art",
+    "difficulty": "easy"
+  },
+  {
+    "id": "parachute",
+    "answer": "parachute",
+    "aliases": [],
+    "category": "outdoors",
+    "difficulty": "medium"
+  },
+  {
+    "id": "peanut",
+    "answer": "peanut",
+    "aliases": [],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "pear",
+    "answer": "pear",
+    "aliases": [],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "pencil",
+    "answer": "pencil",
+    "aliases": [],
+    "category": "school",
+    "difficulty": "easy"
+  },
+  {
+    "id": "pillow",
+    "answer": "pillow",
+    "aliases": ["cushion"],
+    "category": "home",
+    "difficulty": "easy"
+  },
+  {
+    "id": "pineapple",
+    "answer": "pineapple",
+    "aliases": [],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "pliers",
+    "answer": "pliers",
+    "aliases": [],
+    "category": "tools",
+    "difficulty": "medium"
+  },
+  {
+    "id": "postcard",
+    "answer": "postcard",
+    "aliases": [],
+    "category": "travel",
+    "difficulty": "medium"
+  },
+  {
+    "id": "purse",
+    "answer": "purse",
+    "aliases": ["handbag"],
+    "category": "fashion",
+    "difficulty": "easy"
+  },
+  {
+    "id": "rabbit",
+    "answer": "rabbit",
+    "aliases": ["bunny"],
+    "category": "animal",
+    "difficulty": "easy"
+  },
+  {
+    "id": "rake",
+    "answer": "rake",
+    "aliases": [],
+    "category": "outdoors",
+    "difficulty": "easy"
+  },
+  {
+    "id": "remote-control",
+    "answer": "remote control",
+    "aliases": ["remote"],
+    "category": "electronics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "sandwich",
+    "answer": "sandwich",
+    "aliases": [],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "saxophone",
+    "answer": "saxophone",
+    "aliases": ["sax"],
+    "category": "music",
+    "difficulty": "medium"
+  },
+  {
+    "id": "scissors",
+    "answer": "scissors",
+    "aliases": [],
+    "category": "office",
+    "difficulty": "easy"
+  },
+  {
+    "id": "screwdriver",
+    "answer": "screwdriver",
+    "aliases": [],
+    "category": "tools",
+    "difficulty": "easy"
+  },
+  {
+    "id": "shovel",
+    "answer": "shovel",
+    "aliases": ["spade"],
+    "category": "outdoors",
+    "difficulty": "easy"
+  },
+  {
+    "id": "skateboard",
+    "answer": "skateboard",
+    "aliases": [],
+    "category": "sports",
+    "difficulty": "easy"
+  },
+  {
+    "id": "snowflake",
+    "answer": "snowflake",
+    "aliases": [],
+    "category": "nature",
+    "difficulty": "medium"
+  },
+  {
+    "id": "soccer-ball",
+    "answer": "soccer ball",
+    "aliases": ["football"],
+    "category": "sports",
+    "difficulty": "easy"
+  },
+  {
+    "id": "spoon",
+    "answer": "spoon",
+    "aliases": [],
+    "category": "kitchen",
+    "difficulty": "easy"
+  },
+  {
+    "id": "stethoscope",
+    "answer": "stethoscope",
+    "aliases": [],
+    "category": "medical",
+    "difficulty": "medium"
+  },
+  {
+    "id": "strawberry",
+    "answer": "strawberry",
+    "aliases": [],
+    "category": "food",
+    "difficulty": "easy"
+  },
+  {
+    "id": "suitcase",
+    "answer": "suitcase",
+    "aliases": ["luggage"],
+    "category": "travel",
+    "difficulty": "easy"
+  },
+  {
+    "id": "sweater",
+    "answer": "sweater",
+    "aliases": ["jumper"],
+    "category": "clothing",
+    "difficulty": "easy"
+  },
+  {
+    "id": "toaster",
+    "answer": "toaster",
+    "aliases": [],
+    "category": "kitchen",
+    "difficulty": "easy"
+  },
+  {
+    "id": "trumpet",
+    "answer": "trumpet",
+    "aliases": [],
+    "category": "music",
+    "difficulty": "easy"
+  },
+  {
+    "id": "umbrella",
+    "answer": "umbrella",
+    "aliases": [],
+    "category": "outdoors",
+    "difficulty": "easy"
+  },
+  {
+    "id": "vase",
+    "answer": "vase",
+    "aliases": [],
+    "category": "home",
+    "difficulty": "easy"
+  },
+  {
+    "id": "violin",
+    "answer": "violin",
+    "aliases": ["fiddle"],
+    "category": "music",
+    "difficulty": "medium"
+  },
+  {
+    "id": "windmill",
+    "answer": "windmill",
+    "aliases": [],
+    "category": "architecture",
+    "difficulty": "medium"
+  }
+]
