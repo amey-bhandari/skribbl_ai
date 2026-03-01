@@ -7,6 +7,8 @@ type RoundBannerProps = {
   phase: "lobby" | "round" | "intermission" | "paused";
   gameMode: GameMode;
   aiDifficulty: AiDifficulty;
+  copyStatus?: "idle" | "copied" | "failed";
+  onCopyRoomCode?: () => void;
 };
 
 export function RoundBanner({
@@ -15,7 +17,9 @@ export function RoundBanner({
   isDrawer,
   phase,
   gameMode,
-  aiDifficulty
+  aiDifficulty,
+  copyStatus = "idle",
+  onCopyRoomCode
 }: RoundBannerProps) {
   const isLobby = phase === "lobby" || phase === "paused";
   const isGamePhase = phase === "round" || phase === "intermission";
@@ -37,7 +41,14 @@ export function RoundBanner({
       {!isLobby ? <div className="room-sticker">Room {roomCode}</div> : null}
       <div>
         <p className="eyebrow">{isLobby ? "Room code" : "Skribbl-AI"}</p>
-        <h1>{title}</h1>
+        <div className="banner-title-row">
+          <h1>{title}</h1>
+          {isLobby && onCopyRoomCode ? (
+            <button type="button" className="secondary-button banner-copy-button" onClick={onCopyRoomCode}>
+              {copyStatus === "copied" ? "Copied" : copyStatus === "failed" ? "Copy failed" : "Copy code"}
+            </button>
+          ) : null}
+        </div>
         {!isGamePhase ? (
           <div className="hero-chips">
             <span className="badge-chip accent">30s sprint</span>

@@ -28,7 +28,7 @@ export function GuessPanel({
   onSubmit
 }: GuessPanelProps) {
   const [value, setValue] = useState("");
-  const visibleGuesses = guesses.filter((guess) => !guess.isCorrect);
+  const visibleGuesses = guesses.filter((guess) => !guess.isCorrect).slice().reverse();
   const isDrawerView = viewerRole === "drawer";
 
   return (
@@ -76,16 +76,13 @@ export function GuessPanel({
       )}
       {visibleGuesses.length === 0 ? <p className="muted empty-state">No guesses yet.</p> : null}
       <ul className="guess-feed">
-        {visibleGuesses
-          .slice()
-          .reverse()
-          .map((guess) => (
+        {visibleGuesses.map((guess, index) => (
             <li key={guess.id}>
-              <div className="guess-meta">
-                <strong>{guess.playerName}</strong>
-                <span>Beat {guess.bucketIndex + 1}</span>
-              </div>
-              <p>{guess.text}</p>
+              <p className="guess-line">
+                <span className="guess-order">{index + 1})</span>
+                <strong>{guess.playerName}:</strong>
+                <span>{guess.text}</span>
+              </p>
             </li>
           ))}
       </ul>

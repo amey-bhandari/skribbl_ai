@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import {
   CANVAS_SIZE,
   GUESS_INTERVAL_SECONDS,
@@ -13,12 +13,14 @@ import {
 } from "@skribbl-ai/shared";
 import { socket } from "./lib/socket";
 import { AiGuessPanel } from "./components/AiGuessPanel";
+import { AudioDock } from "./components/AudioDock";
 import { BrushSizePicker } from "./components/BrushSizePicker";
 import { CanvasBoard } from "./components/CanvasBoard";
 import { ColorPalette } from "./components/ColorPalette";
 import { GuessPanel } from "./components/GuessPanel";
 import { PlayerRoster } from "./components/PlayerRoster";
 import { RoundBanner } from "./components/RoundBanner";
+import { audioEngine } from "./lib/audioEngine";
 
 type ClientState = {
   connection: "connecting" | "connected" | "disconnected";
@@ -45,6 +47,16 @@ type ClientAction =
   | { type: "error"; message: string }
   | { type: "stroke"; stroke: StrokeRecord }
   | { type: "intermission"; endsAt: number };
+
+type EmojiBurst = {
+  id: string;
+  emoji: string;
+  x: number;
+  y: number;
+  rotation: number;
+  delay: number;
+  size: number;
+};
 
 const initialConfig: GameConfig = {
   roundDurationSeconds: ROUND_DURATION_SECONDS,
@@ -101,13 +113,13 @@ const GAME_MODE_OPTIONS: Record<
 > = {
   humans_vs_humans: {
     label: "Humans vs Humans",
-    summary: "Players race each other before the AI cuts the round off.",
-    detail: "The first correct human gets the point. The AI still ends the round if it guesses first."
+    summary: "The first correct human guess wins the round for that player.",
+    detail: "The AI is still live, so a correct AI guess ends the round before any later human guesses count."
   },
   humans_vs_ai: {
     label: "Humans vs AI",
-    summary: "Everyone cooperates to beat the AI before it reads the sketch.",
-    detail: "This keeps the current team-vs-machine rules."
+    summary: "All humans share one side and try to beat the AI together.",
+    detail: "Any correct human guess wins the round for the human team before the AI can claim it."
   }
 };
 
@@ -206,15 +218,118 @@ export default function App() {
   const [brushSize, setBrushSize] = useState(8);
   const [now, setNow] = useState(Date.now());
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
+  const [musicEnabled, setMusicEnabled] = useState(() => audioEngine.getMusicEnabled());
+  const [sfxEnabled, setSfxEnabled] = useState(() => audioEngine.getSfxEnabled());
+  const [emojiBursts, setEmojiBursts] = useState<EmojiBurst[]>([]);
+  const previousRoomCodeRef = useRef<string | null>(null);
+  const previousGuessCountRef = useRef(0);
+  const previousAiCountRef = useRef(0);
+  const previousPhaseRef = useRef<string | null>(null);
+  const previousResultKeyRef = useRef<string | null>(null);
+  const room = state.room;
 
   useEffect(() => {
     window.localStorage.setItem("skribbl-ai:name", playerName);
   }, [playerName]);
 
   useEffect(() => {
+    const unlockAudio = () => {
+      void audioEngine.unlock();
+    };
+
+    window.addEventListener("pointerdown", unlockAudio, { passive: true });
+    window.addEventListener("keydown", unlockAudio);
+
+    return () => {
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+    };
+  }, []);
+
+  useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1_000);
     return () => window.clearInterval(timer);
   }, []);
+
+  const spawnEmojiBursts = (
+    emojis: readonly string[],
+    options: {
+      xRange: [number, number];
+      yRange: [number, number];
+    }
+  ) => {
+    const nextBursts = emojis.map((emoji, index) => ({
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      emoji,
+      x: randomBetween(options.xRange[0], options.xRange[1]),
+      y: randomBetween(options.yRange[0], options.yRange[1]),
+      rotation: randomBetween(-18, 18),
+      delay: index * 45,
+      size: randomBetween(1.4, 2.6)
+    }));
+
+    setEmojiBursts((current) => [...current, ...nextBursts]);
+
+    window.setTimeout(() => {
+      const nextIds = new Set(nextBursts.map((burst) => burst.id));
+      setEmojiBursts((current) => current.filter((burst) => !nextIds.has(burst.id)));
+    }, 1_800);
+  };
+
+  useEffect(() => {
+    if (!room) {
+      previousRoomCodeRef.current = null;
+      previousGuessCountRef.current = 0;
+      previousAiCountRef.current = 0;
+      previousPhaseRef.current = null;
+      previousResultKeyRef.current = null;
+      return;
+    }
+
+    if (previousRoomCodeRef.current !== room.roomCode) {
+      previousRoomCodeRef.current = room.roomCode;
+      previousGuessCountRef.current = room.guesses.length;
+      previousAiCountRef.current = room.aiHistory.length;
+      previousPhaseRef.current = room.phase;
+      previousResultKeyRef.current = room.lastResult
+        ? `${room.lastResult.reason}-${room.lastResult.answer}-${room.lastResult.winningPlayerId ?? "none"}`
+        : null;
+      return;
+    }
+
+    if (room.phase === "round" && previousPhaseRef.current !== "round") {
+      audioEngine.play("round_start");
+      spawnEmojiBursts(["🚀", "✏️", "✨"], { xRange: [34, 66], yRange: [18, 30] });
+    }
+
+    if (room.guesses.length > previousGuessCountRef.current) {
+      audioEngine.play("guess");
+      spawnEmojiBursts(["💭", "✍️", "🫧"], { xRange: [60, 86], yRange: [46, 66] });
+    }
+
+    if (room.aiHistory.length > previousAiCountRef.current) {
+      audioEngine.play("ai_guess");
+      spawnEmojiBursts(["🤖", "⚡", "🌀"], { xRange: [64, 88], yRange: [58, 82] });
+    }
+
+    const nextResultKey = room.lastResult
+      ? `${room.lastResult.reason}-${room.lastResult.answer}-${room.lastResult.winningPlayerId ?? "none"}`
+      : null;
+    if (nextResultKey && nextResultKey !== previousResultKeyRef.current) {
+      if (room.lastResult?.winner === "humans") {
+        audioEngine.play("humans_win");
+        spawnEmojiBursts(["🎉", "🧠", "✨", "🏁"], { xRange: [32, 70], yRange: [24, 48] });
+      } else if (room.lastResult?.winner === "ai") {
+        audioEngine.play("ai_win");
+        spawnEmojiBursts(["🤖", "💥", "⚠️", "🫠"], { xRange: [36, 76], yRange: [24, 48] });
+      }
+    }
+
+    previousGuessCountRef.current = room.guesses.length;
+    previousAiCountRef.current = room.aiHistory.length;
+    previousPhaseRef.current = room.phase;
+    previousResultKeyRef.current = nextResultKey;
+  }, [room]);
 
   useEffect(() => {
     const handleConnect = () => {
@@ -272,7 +387,6 @@ export default function App() {
     };
   }, [state.config.intermissionSeconds]);
 
-  const room = state.room;
   const isInRoom = Boolean(room);
   const isHost = room?.hostPlayerId === state.playerId;
   const isDrawer = room?.currentRound?.drawerPlayerId === state.playerId;
@@ -290,6 +404,7 @@ export default function App() {
     : null;
 
   const createRoom = () => {
+    audioEngine.play("ui");
     socket.emit("client:event", {
       type: "room:create",
       name: playerName.trim()
@@ -297,6 +412,7 @@ export default function App() {
   };
 
   const joinRoom = () => {
+    audioEngine.play("ui");
     socket.emit("client:event", {
       type: "room:join",
       roomCode: joinCode.trim().toUpperCase(),
@@ -320,8 +436,10 @@ export default function App() {
     try {
       await navigator.clipboard.writeText(room.roomCode);
       setCopyStatus("copied");
+      audioEngine.play("copy");
     } catch {
       setCopyStatus("failed");
+      audioEngine.play("ui");
     }
 
     window.setTimeout(() => {
@@ -330,6 +448,7 @@ export default function App() {
   };
 
   const leaveToHome = (): void => {
+    audioEngine.play("ui");
     socket.disconnect();
     dispatch({ type: "leave_room" });
     setJoinCode("");
@@ -337,6 +456,19 @@ export default function App() {
     window.setTimeout(() => {
       socket.connect();
     }, 0);
+  };
+
+  const toggleMusic = (): void => {
+    setMusicEnabled(audioEngine.setMusicEnabled(!musicEnabled));
+    audioEngine.play("ui");
+  };
+
+  const toggleSfx = (): void => {
+    const nextValue = !sfxEnabled;
+    setSfxEnabled(audioEngine.setSfxEnabled(nextValue));
+    if (nextValue) {
+      audioEngine.play("ui");
+    }
   };
 
   if (!isInRoom || !room) {
@@ -348,29 +480,38 @@ export default function App() {
         <div className="doodle-mark doodle-mark-a">///</div>
         <div className="doodle-mark doodle-mark-b">*</div>
         <div className="doodle-mark doodle-mark-c">?</div>
+        <div className="emoji-burst-layer" aria-hidden="true">
+          {emojiBursts.map((burst) => (
+            <span
+              key={burst.id}
+              className="emoji-burst"
+              style={{
+                left: `${burst.x}%`,
+                top: `${burst.y}%`,
+                transform: `rotate(${burst.rotation}deg)`,
+                animationDelay: `${burst.delay}ms`,
+                fontSize: `${burst.size}rem`
+              }}
+            >
+              {burst.emoji}
+            </span>
+          ))}
+        </div>
+        <AudioDock
+          musicEnabled={musicEnabled}
+          sfxEnabled={sfxEnabled}
+          onToggleMusic={toggleMusic}
+          onToggleSfx={toggleSfx}
+        />
         <section className="landing">
           <div className="landing-copy">
-            <p className="eyebrow">Private Room Sketch Duel</p>
             <img className="landing-logo" src="/logo.png" alt="Skribbl-AI logo" />
-            <h1 className="mb-4 max-w-[10ch] font-display text-[clamp(4rem,8vw,7rem)] leading-[0.94] tracking-[-0.02em] not-italic [text-shadow:3px_3px_0_rgba(41,208,223,0.75),7px_7px_0_rgba(17,17,17,0.12)]">
+            <h1 className="mb-2 max-w-[10ch] font-display text-[clamp(7rem,14vw,11rem)] leading-[0.86] tracking-[-0.04em] not-italic [text-shadow:3px_3px_0_rgba(41,208,223,0.75),7px_7px_0_rgba(17,17,17,0.12)]">
               Skribbl-AI
             </h1>
             <p className="hero-tagline">Draw for humans. Hide from the machine.</p>
-            <p>
-              Each round lasts 30 seconds. Humans and the AI both lock guesses every 5 seconds, but players only see
-              the AI&apos;s top guess while the backend logs all five labels.
-            </p>
-            <div className="hero-chips landing-chips">
-              <span className="badge-chip accent">30-second rounds</span>
-              <span className="badge-chip">5-second guess beats</span>
-              <span className="badge-chip danger">AI knockout rule</span>
-            </div>
-            <div className="hero-note">
-              Draw clearly enough for people, but strange enough that the classifier hesitates.
-            </div>
           </div>
           <div className="landing-card">
-            <p className="eyebrow">Chaos Lobby</p>
             <label>
               <span>Name</span>
               <input value={playerName} onChange={(event) => setPlayerName(event.target.value)} maxLength={24} />
@@ -416,6 +557,29 @@ export default function App() {
       <div className="doodle-mark doodle-mark-a">///</div>
       <div className="doodle-mark doodle-mark-b">*</div>
       <div className="doodle-mark doodle-mark-c">?</div>
+      <div className="emoji-burst-layer" aria-hidden="true">
+        {emojiBursts.map((burst) => (
+          <span
+            key={burst.id}
+            className="emoji-burst"
+            style={{
+              left: `${burst.x}%`,
+              top: `${burst.y}%`,
+              transform: `rotate(${burst.rotation}deg)`,
+              animationDelay: `${burst.delay}ms`,
+              fontSize: `${burst.size}rem`
+            }}
+          >
+            {burst.emoji}
+          </span>
+        ))}
+      </div>
+      <AudioDock
+        musicEnabled={musicEnabled}
+        sfxEnabled={sfxEnabled}
+        onToggleMusic={toggleMusic}
+        onToggleSfx={toggleSfx}
+      />
       <section className={`room-layout ${isGameView ? "room-layout-game" : ""}`}>
           <div className="top-actions">
             <button type="button" className="secondary-button home-button" onClick={leaveToHome}>
@@ -429,6 +593,8 @@ export default function App() {
             phase={room.phase}
             gameMode={room.gameMode}
             aiDifficulty={room.aiDifficulty}
+            copyStatus={copyStatus}
+            onCopyRoomCode={room.phase === "lobby" || room.phase === "paused" ? () => void copyRoomCode() : undefined}
           />
           {state.error ? <p className="error-banner">{state.error}</p> : null}
 
@@ -437,22 +603,22 @@ export default function App() {
               <div className="panel lobby-panel">
                 <p className="eyebrow">Room code</p>
                 <div className="room-code-row">
-                  <div className="room-code">{room.roomCode}</div>
-                  <div className="action-row">
+                <div className="room-code">{room.roomCode}</div>
+                <div className="action-row">
                     <button
                       type="button"
                       className="primary-button"
                       disabled={!isHost}
-                      onClick={() => socket.emit("client:event", { type: "room:start" })}
+                      onClick={() => {
+                        audioEngine.play("ui");
+                        socket.emit("client:event", { type: "room:start" });
+                      }}
                     >
                       Start game
                     </button>
-                    <button type="button" className="secondary-button copy-button" onClick={() => void copyRoomCode()}>
-                      {copyStatus === "copied" ? "Copied" : copyStatus === "failed" ? "Copy failed" : "Copy code"}
-                    </button>
-                  </div>
                 </div>
-                <p>Share the code with friends and start when at least two humans are in. Every round is a 30-second sprint with fresh 5-second guess windows.</p>
+              </div>
+                <p>Share the code, then start once everyone is in the room.</p>
                 <section className="mode-panel">
                   <div className="panel-head">
                     <div>
@@ -469,12 +635,13 @@ export default function App() {
                           type="button"
                           className={`mode-option ${room.gameMode === gameMode ? "is-active" : ""}`}
                           disabled={!isHost}
-                          onClick={() =>
+                          onClick={() => {
+                            audioEngine.play("ui");
                             socket.emit("client:event", {
                               type: "room:set_game_mode",
                               gameMode
-                            })
-                          }
+                            });
+                          }}
                         >
                           <strong>{option.label}</strong>
                           <span>{option.summary}</span>
@@ -501,12 +668,13 @@ export default function App() {
                         type="button"
                         className={`difficulty-option ${room.aiDifficulty === difficulty ? "is-active" : ""}`}
                         disabled={!isHost}
-                        onClick={() =>
+                        onClick={() => {
+                          audioEngine.play("ui");
                           socket.emit("client:event", {
                             type: "room:set_ai_difficulty",
                             difficulty
-                          })
-                        }
+                          });
+                        }}
                       >
                         <strong>{option.label}</strong>
                         <span>{option.summary}</span>
@@ -515,11 +683,7 @@ export default function App() {
                     ))}
                   </div>
                 </section>
-                <p className="muted">
-                  {room.gameMode === "humans_vs_humans"
-                    ? "Players race each other while the AI acts like a cutoff. Only the public top AI guess is shown."
-                    : "Players only see the AI&apos;s top guess. The server keeps logging the top five labels for tuning."}
-                </p>
+                <p className="muted">Only the AI&apos;s public top guess is shown during play.</p>
               </div>
               <PlayerRoster players={room.players} gameMode={room.gameMode} />
             </section>
@@ -622,4 +786,8 @@ function upsertStroke(strokes: StrokeRecord[], next: StrokeRecord): StrokeRecord
   }
 
   return strokes.map((stroke) => (stroke.id === next.id ? next : stroke));
+}
+
+function randomBetween(minimum: number, maximum: number): number {
+  return minimum + (Math.random() * (maximum - minimum));
 }

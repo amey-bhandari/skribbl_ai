@@ -5,6 +5,8 @@ type AiGuessPanelProps = {
 };
 
 export function AiGuessPanel({ batches }: AiGuessPanelProps) {
+  const visibleBatches = batches.slice().reverse();
+
   return (
     <section className="panel ai-panel">
       <div className="panel-head">
@@ -13,23 +15,15 @@ export function AiGuessPanel({ batches }: AiGuessPanelProps) {
       </div>
       {batches.length === 0 ? <p className="muted">No AI guesses yet.</p> : null}
       <div className="ai-list">
-        {batches
-          .slice()
-          .reverse()
-          .map((batch, index) => (
+        {visibleBatches.map((batch, index) => (
             <article key={`${batch.bucketIndex}-${batch.createdAt}`} className="ai-batch">
               <header>
-                <strong>{index + 1}) guess</strong>
+                <strong>
+                  {index + 1}) {batch.labels[0]?.label ?? "No guess"}
+                </strong>
                 {batch.matched ? <span className="badge-chip danger">Matched</span> : null}
               </header>
-              {batch.labels[0] ? (
-                <div className="ai-top-line">
-                  <span>{batch.labels[0].label}</span>
-                  <span>{Math.round(batch.labels[0].confidence * 100)}%</span>
-                </div>
-              ) : (
-                <p className="muted">No guess returned.</p>
-              )}
+              {batch.labels[0] ? <p className="ai-confidence">{Math.round(batch.labels[0].confidence * 100)}% confidence</p> : null}
             </article>
           ))}
       </div>

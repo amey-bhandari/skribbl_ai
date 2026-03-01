@@ -85,6 +85,7 @@ button {
   right: 88px;
   font-size: 3.5rem;
   transform: rotate(8deg);
+  animation: doodle-drift 4.8s ease-in-out infinite;
 }
 
 .doodle-mark-b {
@@ -92,6 +93,7 @@ button {
   left: 42px;
   font-size: 4rem;
   transform: rotate(-10deg);
+  animation: doodle-drift 5.2s ease-in-out infinite;
 }
 
 .doodle-mark-c {
@@ -99,6 +101,7 @@ button {
   left: 18px;
   font-size: 4.8rem;
   transform: rotate(-16deg);
+  animation: doodle-drift 5.6s ease-in-out infinite;
 }
 
 .ambient {
@@ -142,7 +145,7 @@ button {
   justify-items: center;
   text-align: center;
   align-content: center;
-  gap: 10px;
+  gap: 0;
 }
 
 .result-card h2,
@@ -162,11 +165,12 @@ button {
 
 .landing-logo {
   display: block;
-  width: min(420px, 52vw, 32vh);
+  width: min(920px, 84vw, 62vh);
   max-width: 100%;
-  max-height: 32vh;
+  max-height: 62vh;
   object-fit: contain;
-  margin: 0 auto 10px;
+  margin: 0 auto;
+  animation: logo-bob 4.2s ease-in-out infinite;
 }
 
 .landing-card,
@@ -236,6 +240,13 @@ input {
 .guess-form button:hover {
   transform: translate(-1px, -1px) rotate(-1deg);
   box-shadow: 6px 6px 0 rgba(17, 17, 17, 0.95);
+}
+
+.primary-button:active,
+.secondary-button:active,
+.guess-form button:active {
+  transform: translate(2px, 2px) scale(0.98);
+  box-shadow: 2px 2px 0 rgba(17, 17, 17, 0.95);
 }
 
 button:disabled {
@@ -381,6 +392,18 @@ button:disabled {
   font-size: clamp(2.8rem, 6vw, 5rem);
 }
 
+.banner-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.banner-copy-button {
+  padding: 12px 16px;
+  white-space: nowrap;
+}
+
 .hero-tagline {
   font-family: "Permanent Marker", cursive;
   font-size: clamp(1.2rem, 2vw, 1.6rem);
@@ -411,6 +434,7 @@ button:disabled {
   font-family: "Permanent Marker", cursive;
   font-size: 1rem;
   transform: rotate(4deg);
+  animation: sticker-wobble 2.6s ease-in-out infinite;
 }
 
 .hero-chips {
@@ -434,6 +458,7 @@ button:disabled {
   padding: 18px;
   border: 3px solid var(--ink);
   box-shadow: 6px 6px 0 rgba(17, 17, 17, 0.95);
+  animation: timer-pop 1.5s ease-in-out infinite;
 }
 
 .timer-pill span {
@@ -710,6 +735,13 @@ button:disabled {
 .panel {
   padding: 18px;
   background: rgba(255, 255, 255, 0.94);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.panel:hover,
+.tool-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 rgba(17, 17, 17, 0.95);
 }
 
 .room-layout-game .panel {
@@ -790,6 +822,7 @@ button:disabled {
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.92);
   border: 3px solid rgba(17, 17, 17, 0.92);
+  animation: panel-pop 240ms ease both;
 }
 
 .roster li {
@@ -927,6 +960,7 @@ button:disabled {
   border-radius: 14px;
   border: 2px solid #16606a;
   background: rgba(41, 208, 223, 0.14);
+  animation: timer-pop 1.2s ease-in-out infinite;
 }
 
 .drawer-feed-note {
@@ -952,21 +986,22 @@ button:disabled {
   box-shadow: 4px 4px 0 rgba(17, 17, 17, 0.95);
 }
 
-.guess-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 0.88rem;
-}
-
-.guess-meta span {
-  color: var(--muted);
-}
-
 .guess-feed p {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
+}
+
+.guess-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.guess-order {
+  color: var(--muted);
+  min-width: 1.5rem;
 }
 
 .ai-list {
@@ -1009,6 +1044,13 @@ button:disabled {
   font-weight: 700;
 }
 
+.ai-confidence {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .panel-note {
   margin: 6px 0 0;
   font-size: 0.86rem;
@@ -1047,6 +1089,7 @@ button:disabled {
   border: 3px solid rgba(17, 17, 17, 0.92);
   box-shadow: 4px 4px 0 rgba(17, 17, 17, 0.95);
   flex: 1 1 220px;
+  transition: transform 140ms ease, box-shadow 140ms ease;
 }
 
 .tool-tray .tool-card {
@@ -1105,6 +1148,7 @@ button:disabled {
 .size-chip.is-active {
   border-color: var(--ink);
   box-shadow: 0 0 0 3px rgba(244, 140, 37, 0.24);
+  animation: active-bounce 260ms ease;
 }
 
 .size-chip {
@@ -1133,6 +1177,56 @@ button:disabled {
   transform: rotate(-1deg);
 }
 
+.audio-dock {
+  position: fixed;
+  right: 20px;
+  bottom: 18px;
+  z-index: 20;
+  display: flex;
+  gap: 10px;
+}
+
+.audio-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 3px solid var(--ink);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 4px 4px 0 rgba(17, 17, 17, 0.95);
+  font-weight: 800;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.audio-chip:hover {
+  transform: translate(-1px, -1px) rotate(-1deg);
+  box-shadow: 6px 6px 0 rgba(17, 17, 17, 0.95);
+}
+
+.audio-chip.is-active {
+  background: rgba(41, 208, 223, 0.18);
+}
+
+.audio-emoji {
+  font-size: 1.1rem;
+}
+
+.emoji-burst-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 18;
+  overflow: hidden;
+}
+
+.emoji-burst {
+  position: absolute;
+  display: inline-block;
+  filter: drop-shadow(3px 4px 0 rgba(17, 17, 17, 0.2));
+  animation: emoji-burst 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 .hero-banner h1 {
   margin: 0;
   font-family: "Jersey 15", cursive;
@@ -1141,6 +1235,80 @@ button:disabled {
 
 .hero-banner h1 {
   font-size: clamp(2.6rem, 5vw, 4rem);
+}
+
+@keyframes timer-pop {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(1deg);
+  }
+}
+
+@keyframes sticker-wobble {
+  0%,
+  100% {
+    transform: rotate(4deg) translateY(0);
+  }
+  50% {
+    transform: rotate(1deg) translateY(-2px);
+  }
+}
+
+@keyframes doodle-drift {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 6px -6px;
+  }
+}
+
+@keyframes logo-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+@keyframes emoji-burst {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.4);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -90px, 0) scale(1.18);
+  }
+}
+
+@keyframes panel-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes active-bounce {
+  0% {
+    transform: scale(0.88);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @media (max-width: 1100px) {
@@ -1186,6 +1354,12 @@ button:disabled {
   .mode-grid,
   .difficulty-grid {
     grid-template-columns: 1fr;
+  }
+
+  .audio-dock {
+    right: 14px;
+    bottom: 14px;
+    flex-direction: column;
   }
 }
 
