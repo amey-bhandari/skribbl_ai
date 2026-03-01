@@ -37,6 +37,7 @@ type ClientState = {
 type ClientAction =
   | { type: "connected"; playerId: string }
   | { type: "disconnected" }
+  | { type: "leave_room" }
   | { type: "config"; config: GameConfig }
   | { type: "room"; room: RoomState }
   | { type: "timer"; secondsRemaining: number; bucketIndex: number }
@@ -86,7 +87,7 @@ const AI_DIFFICULTY_OPTIONS: Record<
   hard: {
     label: "Hard AI",
     summary: "Focused 86-label game model",
-    detail: "The AI only considers the curated game prompts, so it is much harder to fool."
+    detail: "This keeps the current tighter model untouched."
   }
 };
 
@@ -102,6 +103,20 @@ function reducer(state: ClientState, action: ClientAction): ClientState {
       return {
         ...state,
         connection: "disconnected"
+      };
+    case "leave_room":
+      return {
+        ...state,
+        connection: "disconnected",
+        playerId: "",
+        room: null,
+        timer: {
+          secondsRemaining: state.config.roundDurationSeconds,
+          bucketIndex: 0
+        },
+        prompt: null,
+        error: null,
+        intermissionEndsAt: null
       };
     case "config":
       return {
@@ -241,6 +256,7 @@ export default function App() {
   const isInRoom = Boolean(room);
   const isHost = room?.hostPlayerId === state.playerId;
   const isDrawer = room?.currentRound?.drawerPlayerId === state.playerId;
+  const isGameView = Boolean(room && room.phase !== "lobby" && room.phase !== "paused");
   const hasSubmitted = Boolean(
     room?.guesses.some((guess) => guess.playerId === state.playerId && guess.bucketIndex === state.timer.bucketIndex)
   );
@@ -293,6 +309,16 @@ export default function App() {
     }, 2_000);
   };
 
+  const leaveToHome = (): void => {
+    socket.disconnect();
+    dispatch({ type: "leave_room" });
+    setJoinCode("");
+    setCopyStatus("idle");
+    window.setTimeout(() => {
+      socket.connect();
+    }, 0);
+  };
+
   if (!isInRoom || !room) {
     return (
       <main className="app-shell">
@@ -305,7 +331,7 @@ export default function App() {
         <section className="landing">
           <div className="landing-copy">
             <p className="eyebrow">Private Room Sketch Duel</p>
-            <h1>Doodle Dash</h1>
+            <h1>Training Error</h1>
             <p className="hero-tagline">Draw for humans. Hide from the machine.</p>
             <p>
               Each round lasts 30 seconds. Humans and the AI both lock guesses every 5 seconds, but players only see
@@ -360,14 +386,19 @@ export default function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${isGameView ? "app-shell-game" : ""}`}>
       <div className="paper-grid" />
       <div className="ambient ambient-a" />
       <div className="ambient ambient-b" />
       <div className="doodle-mark doodle-mark-a">///</div>
       <div className="doodle-mark doodle-mark-b">*</div>
       <div className="doodle-mark doodle-mark-c">?</div>
-      <section className="room-layout">
+      <section className={`room-layout ${isGameView ? "room-layout-game" : ""}`}>
+          <div className="top-actions">
+            <button type="button" className="secondary-button home-button" onClick={leaveToHome}>
+              Back to home
+            </button>
+          </div>
           <RoundBanner
             roomCode={room.roomCode}
             secondsRemaining={room.phase === "round" ? state.timer.secondsRemaining : intermissionCountdown}
@@ -440,7 +471,7 @@ export default function App() {
               <PlayerRoster players={room.players} />
             </section>
           ) : (
-            <section className="game-grid">
+            <section className={`game-grid ${isDrawer ? "game-grid-drawer" : "game-grid-guesser"}`}>
               <div className="canvas-column">
                 {isDrawer && state.prompt ? (
                   <section className="prompt-banner" aria-label="Current drawing prompt">
@@ -453,10 +484,21 @@ export default function App() {
                     <strong>Read the drawing before the AI does</strong>
                   </section>
                 )}
-                <div className="canvas-workbench">
-                  <div className="tool-rail tool-rail-left">
-                    <ColorPalette value={brushColor} onChange={setBrushColor} disabled={!canDraw} layout="column" />
-                  </div>
+                <div className={`canvas-workbench ${isDrawer ? "canvas-workbench-drawer" : "canvas-workbench-guesser"}`}>
+                  {isDrawer ? (
+                    <div className="tool-rail tool-rail-left">
+                      <div className="tool-stack">
+                        <ColorPalette
+                          value={brushColor}
+                          onChange={setBrushColor}
+                          onClear={() => socket.emit("client:event", { type: "canvas:clear" })}
+                          disabled={!canDraw}
+                          layout="column"
+                        />
+                        <BrushSizePicker value={brushSize} onChange={setBrushSize} disabled={!canDraw} layout="column" />
+                      </div>
+                    </div>
+                  ) : null}
                   <CanvasBoard
                     strokes={room.strokes}
                     canDraw={Boolean(canDraw)}
@@ -469,9 +511,6 @@ export default function App() {
                     onStrokePoint={(point) => socket.emit("client:event", { type: "canvas:stroke_point", ...point })}
                     onStrokeEnd={() => socket.emit("client:event", { type: "canvas:stroke_end" })}
                   />
-                  <div className="tool-rail tool-rail-right">
-                    <BrushSizePicker value={brushSize} onChange={setBrushSize} disabled={!canDraw} layout="column" />
-                  </div>
                 </div>
               </div>
               <div className="sidebar-column">
@@ -485,6 +524,7 @@ export default function App() {
                   secondsRemaining={state.timer.secondsRemaining}
                   guessIntervalSeconds={state.config.guessIntervalSeconds}
                   roundDurationSeconds={state.config.roundDurationSeconds}
+                  viewerRole={isDrawer ? "drawer" : "guesser"}
                   disabled={Boolean(isDrawer) || room.phase !== "round"}
                   onSubmit={submitGuess}
                 />

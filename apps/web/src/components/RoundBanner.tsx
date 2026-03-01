@@ -18,13 +18,13 @@ export function RoundBanner({ roomCode, secondsRemaining, isDrawer, prompt, phas
         ? "Humans get one guess every 5 seconds. The AI only shows its top guess, but it still checks five labels under the hood."
         : "Private room only. Thirty-second rounds, five-second guess beats, one machine trying to read your sketch.";
   const difficultyCopy =
-    aiDifficulty === "hard" ? "Hard AI · focused 86-label model" : "Easy AI · wide 345-label model";
+    aiDifficulty === "hard" ? "Hard AI - focused 86-label model" : "Easy AI - wide 345-label model";
 
   return (
     <section className="hero-banner">
       <div className="room-sticker">Room {roomCode}</div>
       <div>
-        <p className="eyebrow">Doodle Dash</p>
+        <p className="eyebrow">Training Error</p>
         <h1>{title}</h1>
         <p className="hero-copy">{copy}</p>
         <div className="hero-chips">

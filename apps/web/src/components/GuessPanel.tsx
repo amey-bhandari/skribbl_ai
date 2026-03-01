@@ -10,6 +10,7 @@ type GuessPanelProps = {
   secondsRemaining: number;
   guessIntervalSeconds: number;
   roundDurationSeconds: number;
+  viewerRole: "drawer" | "guesser";
   disabled?: boolean;
   onSubmit: (value: string) => void;
 };
@@ -22,11 +23,13 @@ export function GuessPanel({
   secondsRemaining,
   guessIntervalSeconds,
   roundDurationSeconds,
+  viewerRole,
   disabled = false,
   onSubmit
 }: GuessPanelProps) {
   const [value, setValue] = useState("");
   const visibleGuesses = guesses.filter((guess) => !guess.isCorrect);
+  const isDrawerView = viewerRole === "drawer";
 
   return (
     <section className="panel chat-panel">
@@ -37,37 +40,51 @@ export function GuessPanel({
         </div>
         <span>{visibleGuesses.length} shown</span>
       </div>
-      <form
-        className="guess-form"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (!canGuess || disabled || value.trim().length === 0) {
-            return;
-          }
+      <div className="guess-beat-banner">
+        <strong>{isDrawerView ? "Guessers only get one guess every 5 seconds." : "One guess every 5 seconds."}</strong>
+        <span>
+          {isDrawerView
+            ? "You can watch the public feed, but guessers only get one shot per beat."
+            : "Use each beat carefully. Once you send it, you wait for the next window."}
+        </span>
+      </div>
+      {!isDrawerView ? (
+        <>
+          <form
+            className="guess-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!canGuess || disabled || value.trim().length === 0) {
+                return;
+              }
 
-          onSubmit(value.trim());
-          setValue("");
-        }}
-      >
-        <input
-          value={value}
-          onChange={(event) => setValue(event.target.value)}
-          placeholder="Drop one guess for this beat"
-          disabled={disabled}
-          maxLength={64}
-        />
-        <button type="submit" disabled={!canGuess || disabled || value.trim().length === 0}>
-          Send
-        </button>
-      </form>
-      <GuessCooldown
-        canGuess={canGuess}
-        hasSubmitted={hasSubmitted}
-        bucketIndex={bucketIndex}
-        secondsRemaining={secondsRemaining}
-        guessIntervalSeconds={guessIntervalSeconds}
-        roundDurationSeconds={roundDurationSeconds}
-      />
+              onSubmit(value.trim());
+              setValue("");
+            }}
+          >
+            <input
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              placeholder="Drop one guess for this beat"
+              disabled={disabled}
+              maxLength={64}
+            />
+            <button type="submit" disabled={!canGuess || disabled || value.trim().length === 0}>
+              Send
+            </button>
+          </form>
+          <GuessCooldown
+            canGuess={canGuess}
+            hasSubmitted={hasSubmitted}
+            bucketIndex={bucketIndex}
+            secondsRemaining={secondsRemaining}
+            guessIntervalSeconds={guessIntervalSeconds}
+            roundDurationSeconds={roundDurationSeconds}
+          />
+        </>
+      ) : (
+        <p className="cooldown drawer-feed-note">Drawer view only. Guess input stays hidden until the round ends.</p>
+      )}
       {visibleGuesses.length === 0 ? <p className="muted empty-state">No public guesses yet.</p> : null}
       <ul className="guess-feed">
         {visibleGuesses

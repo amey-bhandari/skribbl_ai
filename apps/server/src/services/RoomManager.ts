@@ -25,7 +25,7 @@ export class RoomManager {
     const room: RoomRuntime = {
       roomCode,
       hostPlayerId: hostPlayer.id,
-      aiDifficulty: "easy",
+      aiDifficulty: "hard",
       players: [hostPlayer],
       score: this.createInitialScore(),
       phase: "lobby",
