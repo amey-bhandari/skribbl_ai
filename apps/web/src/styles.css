@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Spline+Sans:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Jersey+15&family=Permanent+Marker&family=Spline+Sans:wght@400;500;600;700;800&display=swap");
 
 :root {
   color-scheme: light;
@@ -133,7 +133,7 @@ button {
 .landing-copy h1,
 .result-card h2,
 .lobby-panel h2 {
-  font-family: "Permanent Marker", cursive;
+  font-family: "Jersey 15", cursive;
   font-weight: 400;
   line-height: 0.94;
   letter-spacing: -0.02em;
@@ -951,10 +951,9 @@ button:disabled {
   transform: rotate(-1deg);
 }
 
-.panel-head h3,
 .hero-banner h1 {
   margin: 0;
-  font-family: "Permanent Marker", cursive;
+  font-family: "Jersey 15", cursive;
   font-weight: 400;
 }
 
