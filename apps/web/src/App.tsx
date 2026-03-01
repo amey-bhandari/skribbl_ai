@@ -435,15 +435,24 @@ export default function App() {
           {room.phase === "lobby" || room.phase === "paused" ? (
             <section className="lobby-grid">
               <div className="panel lobby-panel">
-                <p className="eyebrow">Room host controls the start</p>
-                <h2>Private room</h2>
-                <p>Share the code with friends and start when at least two humans are in. Every round is a 30-second sprint with fresh 5-second guess windows.</p>
+                <p className="eyebrow">Room code</p>
                 <div className="room-code-row">
                   <div className="room-code">{room.roomCode}</div>
-                  <button type="button" className="secondary-button copy-button" onClick={() => void copyRoomCode()}>
-                    {copyStatus === "copied" ? "Copied" : copyStatus === "failed" ? "Copy failed" : "Copy code"}
-                  </button>
+                  <div className="action-row">
+                    <button
+                      type="button"
+                      className="primary-button"
+                      disabled={!isHost}
+                      onClick={() => socket.emit("client:event", { type: "room:start" })}
+                    >
+                      Start game
+                    </button>
+                    <button type="button" className="secondary-button copy-button" onClick={() => void copyRoomCode()}>
+                      {copyStatus === "copied" ? "Copied" : copyStatus === "failed" ? "Copy failed" : "Copy code"}
+                    </button>
+                  </div>
                 </div>
+                <p>Share the code with friends and start when at least two humans are in. Every round is a 30-second sprint with fresh 5-second guess windows.</p>
                 <section className="mode-panel">
                   <div className="panel-head">
                     <div>
@@ -506,19 +515,6 @@ export default function App() {
                     ))}
                   </div>
                 </section>
-                <div className="action-row">
-                  <button type="button" className="primary-button" disabled={!isHost} onClick={() => socket.emit("client:event", { type: "room:start" })}>
-                    Start game
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    disabled={!isHost}
-                    onClick={() => socket.emit("client:event", { type: "room:reset_score" })}
-                  >
-                    Reset score
-                  </button>
-                </div>
                 <p className="muted">
                   {room.gameMode === "humans_vs_humans"
                     ? "Players race each other while the AI acts like a cutoff. Only the public top AI guess is shown."

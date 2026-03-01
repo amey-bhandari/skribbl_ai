@@ -1,4 +1,5 @@
 import { normalizeGuess, type VisionLabel } from "@skribbl-ai/shared";
+import { logger } from "../logger.js";
 import type { AiProvider, AiProviderInput } from "./AiProvider.js";
 
 type LocalDoodleProviderOptions = {
@@ -26,6 +27,13 @@ export class LocalDoodleProvider implements AiProvider {
     if (!this.configured) {
       throw new Error("Local doodle classifier is not configured");
     }
+
+    logger.info("local doodle request started", {
+      serviceUrl: this.options.serviceUrl,
+      difficulty: input.aiDifficulty,
+      strokeCount: input.strokes.length,
+      candidateCount: input.candidates.length
+    });
 
     const response = await withTimeout(
       fetch(buildPredictUrl(this.options.serviceUrl), {
@@ -56,7 +64,7 @@ export class LocalDoodleProvider implements AiProvider {
     }
 
     const body = (await response.json()) as LocalDoodleResponse;
-    return (body.labels ?? []).flatMap((entry) => {
+    const labels = (body.labels ?? []).flatMap((entry) => {
       const label = entry.label?.trim();
       if (!label) {
         return [];
@@ -70,6 +78,14 @@ export class LocalDoodleProvider implements AiProvider {
         }
       ];
     });
+
+    logger.info("local doodle request completed", {
+      serviceUrl: this.options.serviceUrl,
+      labelCount: labels.length,
+      topLabel: labels[0]?.label
+    });
+
+    return labels;
   }
 }
 
