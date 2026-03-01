@@ -12,7 +12,12 @@ import { GoogleVisionProvider } from "./services/GoogleVisionProvider.js";
 import { LocalDoodleProvider } from "./services/LocalDoodleProvider.js";
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: getCorsOrigin,
+    credentials: true
+  })
+);
 app.use(express.json());
 
 app.get("/health", (_request, response) => {
@@ -86,4 +91,14 @@ function createAiProvider(): AiProvider {
     credentialsPath: appConfig.GOOGLE_APPLICATION_CREDENTIALS,
     apiKey: appConfig.GOOGLE_VISION_API_KEY
   });
+}
+
+function getCorsOrigin(origin: string | undefined, callback: (error: Error | null, allow?: boolean | string) => void): void {
+  if (!origin || appConfig.CORS_ORIGINS.length === 0) {
+    callback(null, true);
+    return;
+  }
+
+  const normalizedOrigin = origin.replace(/\/+$/, "");
+  callback(null, appConfig.CORS_ORIGINS.includes(normalizedOrigin));
 }

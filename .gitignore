@@ -7,3 +7,9 @@ coverage/
 Thumbs.db
 __pycache__/
 *.pyc
+slides/01-title-slide.png
+slides/02-overview-background.png
+slides/03-two-column-background.png
+slides/04-process-background.png
+slides/05-closing-background.png
+scripts/generate_slide_assets.py

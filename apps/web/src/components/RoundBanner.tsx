@@ -48,7 +48,7 @@ export function RoundBanner({
     <section className="hero-banner">
       <div className="room-sticker">Room {roomCode}</div>
       <div>
-        <p className="eyebrow">Training Error</p>
+        <p className="eyebrow">Skribbl-AI</p>
         <h1>{title}</h1>
         <p className="hero-copy">{copy}</p>
         <div className="hero-chips">

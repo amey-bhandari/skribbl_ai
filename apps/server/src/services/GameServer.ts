@@ -46,7 +46,7 @@ export class GameServer {
   constructor(server: HttpServer, private readonly aiProvider: AiProvider) {
     this.io = new Server(server, {
       cors: {
-        origin: true,
+        origin: appConfig.CORS_ORIGINS.length === 0 ? true : appConfig.CORS_ORIGINS,
         credentials: true
       }
     });

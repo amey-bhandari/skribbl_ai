@@ -500,8 +500,8 @@ button:disabled {
 
 .game-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
-  justify-content: start;
+  grid-template-columns: max-content minmax(280px, 340px);
+  justify-content: center;
   gap: 16px;
   min-height: 0;
   align-items: start;
@@ -514,6 +514,10 @@ button:disabled {
   align-content: start;
   min-height: 0;
   min-width: 0;
+}
+
+.canvas-column {
+  width: fit-content;
 }
 
 .canvas-workbench {
