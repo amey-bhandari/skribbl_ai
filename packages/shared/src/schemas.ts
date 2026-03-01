@@ -2,6 +2,7 @@ import { z } from "zod";
 import { CANVAS_SIZE, MAX_GUESS_LENGTH } from "./config";
 
 const aiDifficultySchema = z.union([z.literal("easy"), z.literal("hard")]);
+const gameModeSchema = z.union([z.literal("humans_vs_humans"), z.literal("humans_vs_ai")]);
 
 export const pointSchema = z.object({
   x: z.number().min(0).max(CANVAS_SIZE),
@@ -56,6 +57,10 @@ export const clientEventSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("room:set_ai_difficulty"),
     difficulty: aiDifficultySchema
+  }),
+  z.object({
+    type: z.literal("room:set_game_mode"),
+    gameMode: gameModeSchema
   })
 ]);
 

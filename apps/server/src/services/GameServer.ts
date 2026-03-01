@@ -103,6 +103,9 @@ export class GameServer {
       case "room:set_ai_difficulty":
         this.handleAiDifficultyChange(socket, event.difficulty);
         break;
+      case "room:set_game_mode":
+        this.handleGameModeChange(socket, event.gameMode);
+        break;
       case "canvas:stroke_start":
         this.handleStrokeStart(socket, event);
         break;
@@ -197,6 +200,27 @@ export class GameServer {
     }
 
     this.roomManager.setAiDifficulty(room, difficulty);
+    this.broadcastRoomState(room);
+  }
+
+  private handleGameModeChange(socket: Socket, gameMode: "humans_vs_humans" | "humans_vs_ai"): void {
+    const room = this.requireRoom(socket.id);
+    if (!room) {
+      return;
+    }
+
+    if (room.hostPlayerId !== socket.id) {
+      this.sendError(socket, "Only the host can change game mode");
+      return;
+    }
+
+    if (room.phase === "round") {
+      this.sendError(socket, "Change game mode between rounds");
+      return;
+    }
+
+    this.roomManager.setGameMode(room, gameMode);
+    this.roomManager.resetScore(room);
     this.broadcastRoomState(room);
   }
 

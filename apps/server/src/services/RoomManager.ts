@@ -1,5 +1,6 @@
 import {
   type AiDifficulty,
+  type GameMode,
   MAX_PLAYERS,
   ROOM_CODE_LENGTH,
   type PlayerState,
@@ -26,6 +27,7 @@ export class RoomManager {
       roomCode,
       hostPlayerId: hostPlayer.id,
       aiDifficulty: "hard",
+      gameMode: "humans_vs_ai",
       players: [hostPlayer],
       score: this.createInitialScore(),
       phase: "lobby",
@@ -93,11 +95,20 @@ export class RoomManager {
 
   resetScore(room: RoomRuntime): void {
     room.score = this.createInitialScore();
+    room.players = room.players.map((player) => ({
+      ...player,
+      score: 0
+    }));
     this.touchRoom(room);
   }
 
   setAiDifficulty(room: RoomRuntime, difficulty: AiDifficulty): void {
     room.aiDifficulty = difficulty;
+    this.touchRoom(room);
+  }
+
+  setGameMode(room: RoomRuntime, gameMode: GameMode): void {
+    room.gameMode = gameMode;
     this.touchRoom(room);
   }
 
@@ -212,6 +223,7 @@ export class RoomManager {
       roomCode: room.roomCode,
       hostPlayerId: room.hostPlayerId,
       aiDifficulty: room.aiDifficulty,
+      gameMode: room.gameMode,
       players: room.players.map((player) => this.projectPlayer(player)),
       score: { ...room.score },
       phase: room.phase,
@@ -236,6 +248,7 @@ export class RoomManager {
       id: player.id,
       name: player.name,
       isHost: player.isHost,
+      score: player.score,
       joinedAt: player.joinedAt,
       connected: player.connected
     };
@@ -255,6 +268,7 @@ export class RoomManager {
       socketId,
       name: name.trim(),
       isHost,
+      score: 0,
       joinedAt: Date.now(),
       connected: true,
       lastStrokeEventAt: 0

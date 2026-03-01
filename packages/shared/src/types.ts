@@ -4,11 +4,13 @@ export type ScoreState = {
 };
 
 export type AiDifficulty = "easy" | "hard";
+export type GameMode = "humans_vs_humans" | "humans_vs_ai";
 
 export type PlayerState = {
   id: string;
   name: string;
   isHost: boolean;
+  score: number;
   joinedAt: number;
   connected: boolean;
 };
@@ -87,6 +89,7 @@ export type RoomState = {
   roomCode: string;
   hostPlayerId: string;
   aiDifficulty: AiDifficulty;
+  gameMode: GameMode;
   players: PlayerState[];
   score: ScoreState;
   phase: RoomPhase;

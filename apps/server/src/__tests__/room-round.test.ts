@@ -35,6 +35,33 @@ describe("room and round flow", () => {
     expect(secondRound.state.drawerPlayerId).toBe("socket-guest");
   });
 
+  it("awards the winning player in humans-vs-humans mode", () => {
+    const rooms = new RoomManager();
+    const roundManager = new RoundManager(new WordBankService(), {
+      roundDurationSeconds: 30,
+      guessIntervalSeconds: 5,
+      intermissionSeconds: 5
+    });
+
+    const room = rooms.createRoom("Host", "socket-host");
+    rooms.joinRoom(room.roomCode, "Guest", "socket-guest");
+    rooms.setGameMode(room, "humans_vs_humans");
+
+    const round = roundManager.startNextRound(room);
+    roundManager.endRound(room, {
+      winner: "humans",
+      reason: "human_guess",
+      answer: round.word.answer,
+      correctHumanGuessCount: 1,
+      winningPlayerId: "socket-guest"
+    });
+
+    expect(room.score.humans).toBe(1);
+    expect(room.score.ai).toBe(0);
+    expect(room.players.find((player) => player.id === "socket-guest")?.score).toBe(1);
+    expect(room.players.find((player) => player.id === "socket-host")?.score).toBe(0);
+  });
+
   it("reassigns host when the current host disconnects", () => {
     const rooms = new RoomManager();
     const room = rooms.createRoom("Host", "socket-host");

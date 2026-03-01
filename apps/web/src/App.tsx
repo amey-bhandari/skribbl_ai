@@ -6,6 +6,7 @@ import {
   ROUND_DURATION_SECONDS,
   type AiDifficulty,
   type GameConfig,
+  type GameMode,
   type RoomState,
   type ServerToClientEvent,
   type StrokeRecord
@@ -88,6 +89,26 @@ const AI_DIFFICULTY_OPTIONS: Record<
     label: "Hard AI",
     summary: "Focused 86-label game model",
     detail: "This keeps the current tighter model untouched."
+  }
+};
+
+const GAME_MODE_OPTIONS: Record<
+  GameMode,
+  {
+    label: string;
+    summary: string;
+    detail: string;
+  }
+> = {
+  humans_vs_humans: {
+    label: "Humans vs Humans",
+    summary: "Players race each other before the AI cuts the round off.",
+    detail: "The first correct human gets the point. The AI still ends the round if it guesses first."
+  },
+  humans_vs_ai: {
+    label: "Humans vs AI",
+    summary: "Everyone cooperates to beat the AI before it reads the sketch.",
+    detail: "This keeps the current team-vs-machine rules."
   }
 };
 
@@ -331,6 +352,7 @@ export default function App() {
         <section className="landing">
           <div className="landing-copy">
             <p className="eyebrow">Private Room Sketch Duel</p>
+            <img className="landing-logo" src="/logo.png" alt="Skribbl-AI logo" />
             <h1 className="mb-4 max-w-[10ch] font-display text-[clamp(4rem,8vw,7rem)] leading-[0.94] tracking-[-0.02em] not-italic [text-shadow:3px_3px_0_rgba(41,208,223,0.75),7px_7px_0_rgba(17,17,17,0.12)]">
               Skribbl-AI
             </h1>
@@ -407,6 +429,7 @@ export default function App() {
             isDrawer={Boolean(isDrawer)}
             prompt={state.prompt}
             phase={room.phase}
+            gameMode={room.gameMode}
             aiDifficulty={room.aiDifficulty}
           />
           {state.error ? <p className="error-banner">{state.error}</p> : null}
@@ -423,6 +446,37 @@ export default function App() {
                     {copyStatus === "copied" ? "Copied" : copyStatus === "failed" ? "Copy failed" : "Copy code"}
                   </button>
                 </div>
+                <section className="mode-panel">
+                  <div className="panel-head">
+                    <div>
+                      <h3>Game mode</h3>
+                      <p className="panel-note">{GAME_MODE_OPTIONS[room.gameMode].summary}</p>
+                    </div>
+                    <span>{room.gameMode === "humans_vs_humans" ? "Competitive" : "Co-op"}</span>
+                  </div>
+                  <div className="mode-grid">
+                    {(Object.entries(GAME_MODE_OPTIONS) as Array<[GameMode, (typeof GAME_MODE_OPTIONS)[GameMode]]>).map(
+                      ([gameMode, option]) => (
+                        <button
+                          key={gameMode}
+                          type="button"
+                          className={`mode-option ${room.gameMode === gameMode ? "is-active" : ""}`}
+                          disabled={!isHost}
+                          onClick={() =>
+                            socket.emit("client:event", {
+                              type: "room:set_game_mode",
+                              gameMode
+                            })
+                          }
+                        >
+                          <strong>{option.label}</strong>
+                          <span>{option.summary}</span>
+                          <small>{option.detail}</small>
+                        </button>
+                      )
+                    )}
+                  </div>
+                </section>
                 <section className="difficulty-panel">
                   <div className="panel-head">
                     <div>
@@ -467,10 +521,13 @@ export default function App() {
                     Reset score
                   </button>
                 </div>
-                <p className="muted">Players only see the AI&apos;s top guess. The server keeps logging the top five labels for tuning.</p>
+                <p className="muted">
+                  {room.gameMode === "humans_vs_humans"
+                    ? "Players race each other while the AI acts like a cutoff. Only the public top AI guess is shown."
+                    : "Players only see the AI&apos;s top guess. The server keeps logging the top five labels for tuning."}
+                </p>
               </div>
-              <ScoreBoard score={room.score} />
-              <PlayerRoster players={room.players} />
+              <PlayerRoster players={room.players} gameMode={room.gameMode} />
             </section>
           ) : (
             <section className={`game-grid ${isDrawer ? "game-grid-drawer" : "game-grid-guesser"}`}>
@@ -516,8 +573,12 @@ export default function App() {
                 </div>
               </div>
               <div className="sidebar-column">
-                <ScoreBoard score={room.score} />
-                <PlayerRoster players={room.players} drawerPlayerId={room.currentRound?.drawerPlayerId} />
+                <ScoreBoard score={room.score} gameMode={room.gameMode} />
+                <PlayerRoster
+                  players={room.players}
+                  gameMode={room.gameMode}
+                  drawerPlayerId={room.currentRound?.drawerPlayerId}
+                />
                 <GuessPanel
                   guesses={room.guesses}
                   canGuess={canGuess}
@@ -545,7 +606,9 @@ export default function App() {
                 </p>
                 <p>
                   {room.lastResult.reason === "human_guess"
-                    ? `${room.lastResult.correctHumanGuessCount} human${room.lastResult.correctHumanGuessCount === 1 ? "" : "s"} locked in the right guess in that 5-second window${winningPlayerName ? `, with ${winningPlayerName} landing first` : ""}.`
+                    ? room.gameMode === "humans_vs_humans"
+                      ? `${winningPlayerName ?? "A player"} beat the AI to the answer${room.lastResult.correctHumanGuessCount > 1 ? `, even with ${room.lastResult.correctHumanGuessCount - 1} other correct guess${room.lastResult.correctHumanGuessCount - 1 === 1 ? "" : "es"} in the same beat` : ""}.`
+                      : `${room.lastResult.correctHumanGuessCount} human${room.lastResult.correctHumanGuessCount === 1 ? "" : "s"} locked in the right guess in that 5-second window${winningPlayerName ? `, with ${winningPlayerName} landing first` : ""}.`
                     : room.lastResult.reason === "ai_guess"
                       ? `The AI matched the prompt with ${room.lastResult.winningAiLabel?.label ?? "its top guess"}. No humans solved it first.`
                       : room.lastResult.reason === "timeout"

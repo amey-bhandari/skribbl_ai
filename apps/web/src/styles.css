@@ -135,6 +135,14 @@ button {
   min-height: calc(100vh - 64px);
 }
 
+.landing-copy {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  align-content: center;
+  gap: 10px;
+}
+
 .result-card h2,
 .lobby-panel h2 {
   font-family: "Jersey 15", cursive;
@@ -148,6 +156,15 @@ button {
   max-width: 54ch;
   color: var(--muted);
   font-size: 1.05rem;
+}
+
+.landing-logo {
+  display: block;
+  width: min(420px, 52vw, 32vh);
+  max-width: 100%;
+  max-height: 32vh;
+  object-fit: contain;
+  margin: 0 auto 10px;
 }
 
 .landing-card,
@@ -395,8 +412,9 @@ button:disabled {
 
 .lobby-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) 240px 320px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
   gap: 18px;
+  align-items: start;
 }
 
 .lobby-panel {
@@ -404,10 +422,11 @@ button:disabled {
 }
 
 .room-code {
-  font-family: "Permanent Marker", cursive;
-  font-size: clamp(2.3rem, 4vw, 3.2rem);
-  letter-spacing: 0.12em;
-  padding: 16px 0;
+  font-family: "Jersey 15", cursive;
+  font-size: clamp(3rem, 5vw, 4.2rem);
+  line-height: 0.95;
+  letter-spacing: 0.08em;
+  padding: 12px 0;
 }
 
 .room-code-row {
@@ -421,6 +440,7 @@ button:disabled {
   white-space: nowrap;
 }
 
+.mode-panel,
 .difficulty-panel {
   display: grid;
   gap: 14px;
@@ -432,12 +452,14 @@ button:disabled {
   box-shadow: 4px 4px 0 rgba(17, 17, 17, 0.95);
 }
 
+.mode-grid,
 .difficulty-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
+.mode-option,
 .difficulty-option {
   display: grid;
   gap: 8px;
@@ -449,34 +471,40 @@ button:disabled {
   box-shadow: 4px 4px 0 rgba(17, 17, 17, 0.95);
 }
 
+.mode-option strong,
+.mode-option span,
+.mode-option small,
 .difficulty-option strong,
 .difficulty-option span,
 .difficulty-option small {
   display: block;
 }
 
+.mode-option span,
 .difficulty-option span {
   font-size: 0.92rem;
   font-weight: 700;
 }
 
+.mode-option small,
 .difficulty-option small {
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.4;
 }
 
+.mode-option.is-active,
 .difficulty-option.is-active {
   background: rgba(41, 208, 223, 0.18);
 }
 
 .game-grid {
   display: grid;
-  grid-template-columns: max-content minmax(320px, 400px);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
   justify-content: start;
-  gap: 12px;
+  gap: 16px;
   min-height: 0;
-  align-items: stretch;
+  align-items: start;
 }
 
 .canvas-column,
@@ -485,6 +513,7 @@ button:disabled {
   gap: 18px;
   align-content: start;
   min-height: 0;
+  min-width: 0;
 }
 
 .canvas-workbench {
@@ -535,10 +564,10 @@ button:disabled {
 
 .prompt-banner strong {
   display: block;
-  font-family: "Permanent Marker", cursive;
+  font-family: "Jersey 15", cursive;
   font-size: clamp(2rem, 4vw, 3.4rem);
   line-height: 0.95;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .prompt-banner-guessers {
@@ -635,6 +664,14 @@ button:disabled {
   letter-spacing: 0.08em;
 }
 
+.score-card .eyebrow {
+  margin-bottom: 4px;
+}
+
+.score-card strong {
+  line-height: 1;
+}
+
 .roster,
 .guess-feed,
 .ai-list {
@@ -716,6 +753,13 @@ button:disabled {
 .badge-chip.danger {
   background: var(--hot);
   color: white;
+}
+
+.badge-chip.score-chip {
+  min-width: 2rem;
+  justify-content: center;
+  text-align: center;
+  background: rgba(244, 140, 37, 0.18);
 }
 
 .guess-form {
@@ -986,6 +1030,7 @@ button:disabled {
     align-items: center;
   }
 
+  .mode-grid,
   .difficulty-grid {
     grid-template-columns: 1fr;
   }

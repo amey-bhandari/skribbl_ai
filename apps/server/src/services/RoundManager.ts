@@ -85,6 +85,17 @@ export class RoundManager {
         ...room.score,
         humans: room.score.humans + 1
       };
+
+      if (room.gameMode === "humans_vs_humans" && result.winningPlayerId) {
+        room.players = room.players.map((player) =>
+          player.id === result.winningPlayerId
+            ? {
+                ...player,
+                score: player.score + 1
+              }
+            : player
+        );
+      }
     }
 
     if (result.winner === "ai") {

@@ -2,6 +2,7 @@ import type {
   AiDifficulty,
   AiGuessBatch,
   GameConfig,
+  GameMode,
   GuessFeedEntry,
   RoomState,
   RoundResult,
@@ -58,6 +59,11 @@ export type SetAiDifficultyEvent = {
   difficulty: AiDifficulty;
 };
 
+export type SetGameModeEvent = {
+  type: "room:set_game_mode";
+  gameMode: GameMode;
+};
+
 export type ClientToServerEvent =
   | RoomCreateEvent
   | RoomJoinEvent
@@ -67,7 +73,8 @@ export type ClientToServerEvent =
   | StrokeEndEvent
   | GuessSubmitEvent
   | ResetScoreEvent
-  | SetAiDifficultyEvent;
+  | SetAiDifficultyEvent
+  | SetGameModeEvent;
 
 export type RoomStateEvent = {
   type: "room:state";
