@@ -34,19 +34,8 @@ export function GuessPanel({
   return (
     <section className="panel chat-panel">
       <div className="panel-head">
-        <div>
-          <h3>Human Guesses</h3>
-          <p className="panel-note">Wrong guesses stay visible. Correct ones stay hidden until the bucket resolves.</p>
-        </div>
-        <span>{visibleGuesses.length} shown</span>
-      </div>
-      <div className="guess-beat-banner">
-        <strong>{isDrawerView ? "Guessers only get one guess every 5 seconds." : "One guess every 5 seconds."}</strong>
-        <span>
-          {isDrawerView
-            ? "You can watch the public feed, but guessers only get one shot per beat."
-            : "Use each beat carefully. Once you send it, you wait for the next window."}
-        </span>
+        <h3>Guesses</h3>
+        <span>{visibleGuesses.length}</span>
       </div>
       {!isDrawerView ? (
         <>
@@ -83,9 +72,9 @@ export function GuessPanel({
           />
         </>
       ) : (
-        <p className="cooldown drawer-feed-note">Drawer view only. Guess input stays hidden until the round ends.</p>
+        <p className="cooldown drawer-feed-note">Drawer view only.</p>
       )}
-      {visibleGuesses.length === 0 ? <p className="muted empty-state">No public guesses yet.</p> : null}
+      {visibleGuesses.length === 0 ? <p className="muted empty-state">No guesses yet.</p> : null}
       <ul className="guess-feed">
         {visibleGuesses
           .slice()

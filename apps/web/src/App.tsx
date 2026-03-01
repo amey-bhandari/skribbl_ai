@@ -19,7 +19,6 @@ import { ColorPalette } from "./components/ColorPalette";
 import { GuessPanel } from "./components/GuessPanel";
 import { PlayerRoster } from "./components/PlayerRoster";
 import { RoundBanner } from "./components/RoundBanner";
-import { ScoreBoard } from "./components/ScoreBoard";
 
 type ClientState = {
   connection: "connecting" | "connected" | "disconnected";
@@ -427,7 +426,6 @@ export default function App() {
             roomCode={room.roomCode}
             secondsRemaining={room.phase === "round" ? state.timer.secondsRemaining : intermissionCountdown}
             isDrawer={Boolean(isDrawer)}
-            prompt={state.prompt}
             phase={room.phase}
             gameMode={room.gameMode}
             aiDifficulty={room.aiDifficulty}
@@ -539,25 +537,11 @@ export default function App() {
                   </section>
                 ) : (
                   <section className="prompt-banner prompt-banner-guessers" aria-label="Guessing status">
-                    <p className="eyebrow">Guess Window</p>
-                    <strong>Read the drawing before the AI does</strong>
+                    <p className="eyebrow">Guess</p>
+                    <strong>Guess the word</strong>
                   </section>
                 )}
                 <div className={`canvas-workbench ${isDrawer ? "canvas-workbench-drawer" : "canvas-workbench-guesser"}`}>
-                  {isDrawer ? (
-                    <div className="tool-rail tool-rail-left">
-                      <div className="tool-stack">
-                        <ColorPalette
-                          value={brushColor}
-                          onChange={setBrushColor}
-                          onClear={() => socket.emit("client:event", { type: "canvas:clear" })}
-                          disabled={!canDraw}
-                          layout="column"
-                        />
-                        <BrushSizePicker value={brushSize} onChange={setBrushSize} disabled={!canDraw} layout="column" />
-                      </div>
-                    </div>
-                  ) : null}
                   <CanvasBoard
                     strokes={room.strokes}
                     canDraw={Boolean(canDraw)}
@@ -570,10 +554,21 @@ export default function App() {
                     onStrokePoint={(point) => socket.emit("client:event", { type: "canvas:stroke_point", ...point })}
                     onStrokeEnd={() => socket.emit("client:event", { type: "canvas:stroke_end" })}
                   />
+                  {isDrawer ? (
+                    <div className="tool-tray">
+                      <ColorPalette
+                        value={brushColor}
+                        onChange={setBrushColor}
+                        onClear={() => socket.emit("client:event", { type: "canvas:clear" })}
+                        disabled={!canDraw}
+                        layout="row"
+                      />
+                      <BrushSizePicker value={brushSize} onChange={setBrushSize} disabled={!canDraw} layout="row" />
+                    </div>
+                  ) : null}
                 </div>
               </div>
               <div className="sidebar-column">
-                <ScoreBoard score={room.score} gameMode={room.gameMode} />
                 <PlayerRoster
                   players={room.players}
                   gameMode={room.gameMode}

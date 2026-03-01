@@ -81,7 +81,6 @@ export function CanvasBoard({
       <div className="canvas-head">
         <div>
           <strong>{canDraw ? "Drawer live" : "Shared sketchbook"}</strong>
-          <span>{canDraw ? "Humans and AI read every 5 seconds" : "Study the marks, then fire one guess per beat"}</span>
         </div>
         <span>{size} x {size}</span>
       </div>

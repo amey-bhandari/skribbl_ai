@@ -8,21 +8,18 @@ export function AiGuessPanel({ batches }: AiGuessPanelProps) {
   return (
     <section className="panel ai-panel">
       <div className="panel-head">
-        <div>
-          <h3>AI Monitor</h3>
-          <p className="panel-note">Only the top guess is public. The full top 5 stays in server logs.</p>
-        </div>
-        <span>top 1 every 5s</span>
+        <h3>AI guesses</h3>
+        <span>{batches.length}</span>
       </div>
-      {batches.length === 0 ? <p className="muted">The AI has not guessed yet.</p> : null}
+      {batches.length === 0 ? <p className="muted">No AI guesses yet.</p> : null}
       <div className="ai-list">
         {batches
           .slice()
           .reverse()
-          .map((batch) => (
+          .map((batch, index) => (
             <article key={`${batch.bucketIndex}-${batch.createdAt}`} className="ai-batch">
               <header>
-                <strong>Beat {batch.bucketIndex + 1}</strong>
+                <strong>{index + 1}) guess</strong>
                 {batch.matched ? <span className="badge-chip danger">Matched</span> : null}
               </header>
               {batch.labels[0] ? (
