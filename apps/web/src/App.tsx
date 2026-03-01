@@ -331,7 +331,9 @@ export default function App() {
         <section className="landing">
           <div className="landing-copy">
             <p className="eyebrow">Private Room Sketch Duel</p>
-            <h1>Training Error</h1>
+            <h1 className="mb-4 max-w-[10ch] font-display text-[clamp(4rem,8vw,7rem)] leading-[0.94] tracking-[-0.02em] not-italic [text-shadow:3px_3px_0_rgba(41,208,223,0.75),7px_7px_0_rgba(17,17,17,0.12)]">
+              Skribbl-AI
+            </h1>
             <p className="hero-tagline">Draw for humans. Hide from the machine.</p>
             <p>
               Each round lasts 30 seconds. Humans and the AI both lock guesses every 5 seconds, but players only see

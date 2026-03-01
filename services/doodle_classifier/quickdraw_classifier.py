@@ -8,11 +8,43 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
-WORD_BANK_PATH = ROOT_DIR / "apps" / "server" / "src" / "data" / "word-bank.json"
-ALL_CATEGORIES_PATH = ROOT_DIR / "services" / "doodle_classifier" / "data" / "quickdraw_all_categories.txt"
-FOCUSED_PROTOTYPE_PATH = ROOT_DIR / "services" / "doodle_classifier" / "data" / "quickdraw_prototypes.json"
-FULL_PROTOTYPE_PATH = ROOT_DIR / "services" / "doodle_classifier" / "data" / "quickdraw_prototypes_full.json"
+SERVICE_DIR = Path(__file__).resolve().parent
+
+
+def resolve_repo_root() -> Path:
+    for candidate in [SERVICE_DIR, *SERVICE_DIR.parents]:
+        if (candidate / "services" / "doodle_classifier").exists():
+            return candidate
+
+    return SERVICE_DIR
+
+
+def resolve_existing_path(*candidates: Path) -> Path:
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    return candidates[0]
+
+
+ROOT_DIR = resolve_repo_root()
+DATA_DIR = resolve_existing_path(SERVICE_DIR / "data", ROOT_DIR / "services" / "doodle_classifier" / "data")
+WORD_BANK_PATH = resolve_existing_path(
+    ROOT_DIR / "apps" / "server" / "src" / "data" / "word-bank.json",
+    DATA_DIR / "word-bank.json",
+)
+ALL_CATEGORIES_PATH = resolve_existing_path(
+    DATA_DIR / "quickdraw_all_categories.txt",
+    ROOT_DIR / "services" / "doodle_classifier" / "data" / "quickdraw_all_categories.txt",
+)
+FOCUSED_PROTOTYPE_PATH = resolve_existing_path(
+    DATA_DIR / "quickdraw_prototypes.json",
+    ROOT_DIR / "services" / "doodle_classifier" / "data" / "quickdraw_prototypes.json",
+)
+FULL_PROTOTYPE_PATH = resolve_existing_path(
+    DATA_DIR / "quickdraw_prototypes_full.json",
+    ROOT_DIR / "services" / "doodle_classifier" / "data" / "quickdraw_prototypes_full.json",
+)
 PROTOTYPE_PATH = FOCUSED_PROTOTYPE_PATH
 DEFAULT_SAMPLES_PER_LABEL = 32
 RASTER_SIZE = 64

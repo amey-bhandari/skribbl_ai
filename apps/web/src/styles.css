@@ -1,4 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Jersey+15&family=Permanent+Marker&family=Spline+Sans:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Jersey 15", cursive;
+}
 
 :root {
   color-scheme: light;
@@ -130,7 +135,6 @@ button {
   min-height: calc(100vh - 64px);
 }
 
-.landing-copy h1,
 .result-card h2,
 .lobby-panel h2 {
   font-family: "Jersey 15", cursive;
@@ -138,13 +142,6 @@ button {
   line-height: 0.94;
   letter-spacing: -0.02em;
   margin: 0 0 16px;
-}
-
-.landing-copy h1 {
-  font-size: clamp(4rem, 8vw, 7rem);
-  text-transform: uppercase;
-  max-width: 8ch;
-  text-shadow: 3px 3px 0 rgba(41, 208, 223, 0.75), 7px 7px 0 rgba(17, 17, 17, 0.12);
 }
 
 .landing-copy p {
