@@ -93,13 +93,13 @@ const AI_DIFFICULTY_OPTIONS: Record<
 > = {
   easy: {
     label: "Easy AI",
-    summary: "Wide 345-label Quick, Draw! model",
-    detail: "More possible labels gives the AI more ways to miss the right one."
+    summary: "AI can guess from the full 345-label Quick, Draw! set.",
+    detail: "A wider label set makes the AI less precise."
   },
   hard: {
     label: "Hard AI",
-    summary: "Focused 86-label game model",
-    detail: "This keeps the current tighter model untouched."
+    summary: "AI guesses from the tighter game label set.",
+    detail: "A smaller label set makes the AI sharper."
   }
 };
 
@@ -113,13 +113,13 @@ const GAME_MODE_OPTIONS: Record<
 > = {
   humans_vs_humans: {
     label: "Humans vs Humans",
-    summary: "The first correct human guess wins the round for that player.",
-    detail: "The AI is still live, so a correct AI guess ends the round before any later human guesses count."
+    summary: "Each human is playing for their own point.",
+    detail: "If the AI guesses first, the round is gone."
   },
   humans_vs_ai: {
     label: "Humans vs AI",
-    summary: "All humans share one side and try to beat the AI together.",
-    detail: "Any correct human guess wins the round for the human team before the AI can claim it."
+    summary: "All humans are on the same side against the AI.",
+    detail: "Any human can save the round for the team."
   }
 };
 
@@ -589,42 +589,30 @@ export default function App() {
           <RoundBanner
             roomCode={room.roomCode}
             secondsRemaining={room.phase === "round" ? state.timer.secondsRemaining : intermissionCountdown}
-            isDrawer={Boolean(isDrawer)}
             phase={room.phase}
             gameMode={room.gameMode}
-            aiDifficulty={room.aiDifficulty}
             copyStatus={copyStatus}
             onCopyRoomCode={room.phase === "lobby" || room.phase === "paused" ? () => void copyRoomCode() : undefined}
+            onStartGame={
+              room.phase === "lobby" || room.phase === "paused"
+                ? () => {
+                    audioEngine.play("ui");
+                    socket.emit("client:event", { type: "room:start" });
+                  }
+                : undefined
+            }
+            canStartGame={Boolean(isHost)}
           />
           {state.error ? <p className="error-banner">{state.error}</p> : null}
 
           {room.phase === "lobby" || room.phase === "paused" ? (
             <section className="lobby-grid">
               <div className="panel lobby-panel">
-                <p className="eyebrow">Ready to start</p>
-                <div className="room-code-row">
-                  <div className="action-row">
-                    <button
-                      type="button"
-                      className="primary-button"
-                      disabled={!isHost}
-                      onClick={() => {
-                        audioEngine.play("ui");
-                        socket.emit("client:event", { type: "room:start" });
-                      }}
-                    >
-                      Start game
-                    </button>
-                  </div>
-                </div>
-                <p>Share the code, then start once everyone is in the room.</p>
                 <section className="mode-panel">
                   <div className="panel-head">
                     <div>
                       <h3>Game mode</h3>
-                      <p className="panel-note">{GAME_MODE_OPTIONS[room.gameMode].summary}</p>
                     </div>
-                    <span>{room.gameMode === "humans_vs_humans" ? "Competitive" : "Co-op"}</span>
                   </div>
                   <div className="mode-grid">
                     {(Object.entries(GAME_MODE_OPTIONS) as Array<[GameMode, (typeof GAME_MODE_OPTIONS)[GameMode]]>).map(
@@ -654,9 +642,7 @@ export default function App() {
                   <div className="panel-head">
                     <div>
                       <h3>AI difficulty</h3>
-                      <p className="panel-note">{AI_DIFFICULTY_OPTIONS[room.aiDifficulty].summary}</p>
                     </div>
-                    <span>{room.aiDifficulty === "hard" ? "Focused model" : "Wide model"}</span>
                   </div>
                   <div className="difficulty-grid">
                     {(Object.entries(AI_DIFFICULTY_OPTIONS) as Array<
@@ -682,7 +668,6 @@ export default function App() {
                     ))}
                   </div>
                 </section>
-                <p className="muted">Only the AI&apos;s public top guess is shown during play.</p>
               </div>
               <PlayerRoster players={room.players} gameMode={room.gameMode} />
             </section>

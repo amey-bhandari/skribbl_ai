@@ -382,6 +382,7 @@ button:disabled {
 .room-layout:not(.room-layout-game) .hero-banner {
   padding: 22px 26px;
   gap: 16px;
+  align-items: center;
 }
 
 .room-layout:not(.room-layout-game) .hero-chips {
@@ -397,6 +398,14 @@ button:disabled {
   flex-wrap: wrap;
   align-items: center;
   gap: 14px;
+  justify-content: space-between;
+}
+
+.banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
 }
 
 .banner-copy-button {
