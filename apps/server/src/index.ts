@@ -34,22 +34,13 @@ app.get("/config", (_request, response) => {
 });
 
 app.get("/debug/doodle-health", async (_request, response) => {
-  if (appConfig.AI_PROVIDER !== "local_doodle") {
-    response.status(400).json({
-      status: "disabled",
-      message: "AI provider is not local_doodle",
-      provider: appConfig.AI_PROVIDER
-    });
-    return;
-  }
-
   try {
-    const result = await fetchDoodleHealth(appConfig.DOODLE_SERVICE_URL);
-    response.status(result.statusCode).json(result.payload);
+    const payload = aiProvider.getDebugStatus ? await aiProvider.getDebugStatus() : { status: "unavailable" };
+    response.status(payload.status === "error" ? 500 : 200).json(payload);
   } catch (error) {
     response.status(502).json({
       status: "error",
-      serviceUrl: appConfig.DOODLE_SERVICE_URL,
+      provider: aiProvider.name,
       error: formatError(error)
     });
   }
@@ -79,6 +70,7 @@ server.listen(appConfig.PORT, () => {
     port: appConfig.PORT,
     environment: appConfig.NODE_ENV,
     aiProvider: aiProvider.name,
+    aiMode: aiProvider.name === "local_doodle" ? "in_process" : "remote_api",
     visionAuthMode: appConfig.GOOGLE_APPLICATION_CREDENTIALS
       ? "service_account"
       : appConfig.GOOGLE_VISION_API_KEY
@@ -102,8 +94,6 @@ function resolveWebBuildPath(): string | null {
 function createAiProvider(): AiProvider {
   if (appConfig.AI_PROVIDER === "local_doodle") {
     return new LocalDoodleProvider({
-      serviceUrl: appConfig.DOODLE_SERVICE_URL,
-      timeoutMs: appConfig.VISION_TIMEOUT_MS,
       maxLabels: appConfig.MAX_VISION_LABELS
     });
   }
@@ -127,51 +117,31 @@ function getCorsOrigin(origin: string | undefined, callback: (error: Error | nul
 }
 
 async function logInitialDoodleHealth(): Promise<void> {
-  if (appConfig.AI_PROVIDER !== "local_doodle") {
+  if (appConfig.AI_PROVIDER !== "local_doodle" || !aiProvider.getDebugStatus) {
     return;
   }
 
   try {
-    const result = await fetchDoodleHealth(appConfig.DOODLE_SERVICE_URL);
+    const result = await aiProvider.getDebugStatus();
+    if (result.status === "error") {
+      logger.warn("local doodle health check failed", {
+        backend: getStringField(result, "backend"),
+        error: getStringField(result, "error")
+      });
+      return;
+    }
+
     logger.info("local doodle health check ok", {
-      serviceUrl: appConfig.DOODLE_SERVICE_URL,
-      statusCode: result.statusCode,
-      backend: getStringField(result.payload, "backend"),
-      difficulties: getDifficultySummary(result.payload)
+      backend: getStringField(result, "backend"),
+      mode: getStringField(result, "mode"),
+      difficulties: getDifficultySummary(result)
     });
   } catch (error) {
     logger.warn("local doodle health check failed", {
-      serviceUrl: appConfig.DOODLE_SERVICE_URL,
+      provider: aiProvider.name,
       error: formatError(error)
     });
   }
-}
-
-async function fetchDoodleHealth(
-  serviceUrl: string
-): Promise<{ statusCode: number; payload: Record<string, unknown> }> {
-  const normalizedUrl = serviceUrl.endsWith("/") ? serviceUrl.slice(0, -1) : serviceUrl;
-  const response = await fetch(`${normalizedUrl}/health`, {
-    signal: AbortSignal.timeout(5_000)
-  });
-
-  let payload: Record<string, unknown> = {};
-  try {
-    payload = (await response.json()) as Record<string, unknown>;
-  } catch {
-    payload = {
-      status: "invalid_json"
-    };
-  }
-
-  return {
-    statusCode: response.status,
-    payload: {
-      serviceUrl,
-      ok: response.ok,
-      ...payload
-    }
-  };
 }
 
 function getStringField(payload: Record<string, unknown>, key: string): string | undefined {

@@ -1,135 +1,92 @@
-import { normalizeGuess, type VisionLabel } from "@skribbl-ai/shared";
 import { logger } from "../logger.js";
 import type { AiProvider, AiProviderInput } from "./AiProvider.js";
+import { QuickDrawPrototypeMatcher } from "./QuickDrawPrototypeMatcher.js";
 
 type LocalDoodleProviderOptions = {
-  serviceUrl: string;
-  timeoutMs: number;
   maxLabels: number;
 };
 
-type LocalDoodleResponse = {
-  labels?: Array<{
-    label?: string;
-    confidence?: number;
-  }>;
-};
-
 export class LocalDoodleProvider implements AiProvider {
-  readonly configured: boolean;
   readonly name = "local_doodle" as const;
+  readonly configured: boolean;
+  private readonly focusedMatcher: QuickDrawPrototypeMatcher | null;
+  private readonly fullMatcher: QuickDrawPrototypeMatcher | null;
+  private readonly configurationError: string | null;
 
   constructor(private readonly options: LocalDoodleProviderOptions) {
-    this.configured = Boolean(options.serviceUrl.trim());
+    try {
+      this.focusedMatcher = new QuickDrawPrototypeMatcher("quickdraw_prototypes.json");
+      this.fullMatcher = new QuickDrawPrototypeMatcher("quickdraw_prototypes_full.json");
+      this.configured = true;
+      this.configurationError = null;
+    } catch (error) {
+      this.focusedMatcher = null;
+      this.fullMatcher = null;
+      this.configured = false;
+      this.configurationError = formatError(error);
+      logger.error("local doodle provider unavailable", {
+        error: this.configurationError
+      });
+    }
   }
 
-  async detectLabels(input: AiProviderInput): Promise<VisionLabel[]> {
-    if (!this.configured) {
-      throw new Error("Local doodle classifier is not configured");
+  async detectLabels(input: AiProviderInput) {
+    if (!this.configured || !this.focusedMatcher || !this.fullMatcher) {
+      throw new Error(
+        this.configurationError
+          ? `Local doodle classifier is not configured: ${this.configurationError}`
+          : "Local doodle classifier is not configured"
+      );
     }
 
     logger.info("local doodle request started", {
-      serviceUrl: this.options.serviceUrl,
       difficulty: input.aiDifficulty,
       strokeCount: input.strokes.length,
       candidateCount: input.candidates.length
     });
 
-    const response = await withTimeout(
-      fetch(buildPredictUrl(this.options.serviceUrl), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          topK: this.options.maxLabels,
-          difficulty: input.aiDifficulty,
-          strokes: input.strokes,
-          candidates: input.candidates.map((candidate) => ({
-            label: candidate.answer,
-            aliases: candidate.aliases
-          }))
-        })
-      }).catch((error: unknown) => {
-        throw new Error(formatFetchError(error));
-      }),
-      this.options.timeoutMs
+    const matcher = input.aiDifficulty === "easy" ? this.fullMatcher : this.focusedMatcher;
+    const labels = matcher.predict(
+      input.strokes,
+      this.options.maxLabels,
+      input.aiDifficulty === "easy" ? null : input.candidates.map((candidate) => candidate.answer)
     );
 
-    if (!response.ok) {
-      const responseText = await response.text();
-      throw new Error(
-        `Local doodle request failed with status ${response.status}: ${truncateForLog(responseText || "<empty body>")}`
-      );
-    }
-
-    const body = (await response.json()) as LocalDoodleResponse;
-    const labels = (body.labels ?? []).flatMap((entry) => {
-      const label = entry.label?.trim();
-      if (!label) {
-        return [];
-      }
-
-      return [
-        {
-          label,
-          confidence: Number(entry.confidence ?? 0),
-          normalized: normalizeGuess(label)
-        }
-      ];
-    });
-
     logger.info("local doodle request completed", {
-      serviceUrl: this.options.serviceUrl,
+      difficulty: input.aiDifficulty,
       labelCount: labels.length,
       topLabel: labels[0]?.label
     });
 
     return labels;
   }
-}
 
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
-  let timer: NodeJS.Timeout | null = null;
-  try {
-    return await Promise.race<T>([
-      promise,
-      new Promise<T>((_, reject) => {
-        timer = setTimeout(() => reject(new Error("Local doodle request timed out")), timeoutMs);
-      })
-    ]);
-  } finally {
-    if (timer) {
-      clearTimeout(timer);
+  getDebugStatus(): Record<string, unknown> {
+    if (!this.configured || !this.focusedMatcher || !this.fullMatcher) {
+      return {
+        status: "error",
+        backend: "quickdraw_prototype_v1",
+        mode: "in_process",
+        error: this.configurationError ?? "Local doodle classifier is not configured"
+      };
     }
+
+    return {
+      status: "ok",
+      backend: "quickdraw_prototype_v1",
+      mode: "in_process",
+      difficulties: {
+        hard: this.focusedMatcher.getStatus(),
+        easy: this.fullMatcher.getStatus()
+      }
+    };
   }
 }
 
-function buildPredictUrl(serviceUrl: string): string {
-  const normalizedUrl = serviceUrl.endsWith("/") ? serviceUrl.slice(0, -1) : serviceUrl;
-  return `${normalizedUrl}/predict`;
-}
-
-function truncateForLog(value: string, maxLength = 2_000): string {
-  if (value.length <= maxLength) {
-    return value;
+function formatError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
   }
 
-  return `${value.slice(0, maxLength)}... [truncated]`;
-}
-
-function formatFetchError(error: unknown): string {
-  if (!(error instanceof Error)) {
-    return "Local doodle request failed";
-  }
-
-  const causeMessage =
-    typeof error.cause === "object" &&
-    error.cause &&
-    "message" in error.cause &&
-    typeof error.cause.message === "string"
-      ? error.cause.message
-      : null;
-
-  return causeMessage ? `${error.message}: ${causeMessage}` : error.message;
+  return "Unknown error";
 }

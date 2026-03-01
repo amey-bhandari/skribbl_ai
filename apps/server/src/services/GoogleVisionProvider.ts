@@ -21,6 +21,15 @@ export class GoogleVisionProvider implements AiProvider {
     this.client = options.credentialsPath ? new ImageAnnotatorClient() : null;
   }
 
+  getDebugStatus(): Record<string, unknown> {
+    return {
+      status: this.configured ? "ok" : "disabled",
+      backend: "google_vision",
+      authMode: this.options.credentialsPath ? "service_account" : this.apiKey ? "api_key" : "disabled",
+      maxLabels: this.options.maxLabels
+    };
+  }
+
   async detectLabels({ imageBuffer }: AiProviderInput): Promise<VisionLabel[]> {
     if (this.client) {
       const request = this.client.annotateImage({

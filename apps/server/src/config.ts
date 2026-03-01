@@ -32,23 +32,8 @@ const envSchema = z
     MAX_VISION_LABELS: z.coerce.number().int().min(1).max(10).default(MAX_VISION_LABELS),
     VISION_TIMEOUT_MS: z.coerce.number().int().min(1_000).default(VISION_TIMEOUT_MS),
     AI_PROVIDER: z.enum(["google_vision", "local_doodle"]).optional(),
-    DOODLE_SERVICE_URL: z.string().trim().optional(),
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     GOOGLE_VISION_API_KEY: z.string().optional()
-  })
-  .superRefine((env, ctx) => {
-    if (!env.DOODLE_SERVICE_URL || env.DOODLE_SERVICE_URL.length === 0) {
-      return;
-    }
-
-    const parsed = z.string().url().safeParse(env.DOODLE_SERVICE_URL);
-    if (!parsed.success) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["DOODLE_SERVICE_URL"],
-        message: "Invalid url"
-      });
-    }
   });
 
 const parsedEnv = envSchema.parse(process.env);
@@ -56,19 +41,9 @@ const aiProvider =
   parsedEnv.AI_PROVIDER ??
   (parsedEnv.GOOGLE_APPLICATION_CREDENTIALS || parsedEnv.GOOGLE_VISION_API_KEY ? "google_vision" : "local_doodle");
 
-const doodleServiceUrl =
-  parsedEnv.DOODLE_SERVICE_URL && parsedEnv.DOODLE_SERVICE_URL.length > 0
-    ? parsedEnv.DOODLE_SERVICE_URL
-    : "http://127.0.0.1:8008";
-
-if (aiProvider === "local_doodle") {
-  z.string().url().parse(doodleServiceUrl);
-}
-
 export const appConfig = {
   ...parsedEnv,
   AI_PROVIDER: aiProvider,
-  DOODLE_SERVICE_URL: doodleServiceUrl,
   CORS_ORIGINS: parseCorsOrigins(parsedEnv.CORS_ORIGINS),
   MIN_PLAYERS,
   MAX_PLAYERS,

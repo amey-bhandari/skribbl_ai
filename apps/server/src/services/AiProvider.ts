@@ -11,4 +11,5 @@ export interface AiProvider {
   readonly configured: boolean;
   readonly name: "google_vision" | "local_doodle";
   detectLabels(input: AiProviderInput): Promise<VisionLabel[]>;
+  getDebugStatus?(): Record<string, unknown> | Promise<Record<string, unknown>>;
 }
