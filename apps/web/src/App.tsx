@@ -601,10 +601,9 @@ export default function App() {
           {room.phase === "lobby" || room.phase === "paused" ? (
             <section className="lobby-grid">
               <div className="panel lobby-panel">
-                <p className="eyebrow">Room code</p>
+                <p className="eyebrow">Ready to start</p>
                 <div className="room-code-row">
-                <div className="room-code">{room.roomCode}</div>
-                <div className="action-row">
+                  <div className="action-row">
                     <button
                       type="button"
                       className="primary-button"
@@ -616,8 +615,8 @@ export default function App() {
                     >
                       Start game
                     </button>
+                  </div>
                 </div>
-              </div>
                 <p>Share the code, then start once everyone is in the room.</p>
                 <section className="mode-panel">
                   <div className="panel-head">

@@ -521,7 +521,7 @@ export class GameServer {
     const startedAt = Date.now();
 
     try {
-      const labels = await this.aiProvider.detectLabels({
+      const rawLabels = await this.aiProvider.detectLabels({
         imageBuffer,
         strokes,
         candidates: this.wordBank.getWords(),
@@ -532,6 +532,7 @@ export class GameServer {
         return;
       }
 
+      const labels = this.getPublicAiLabels(rawLabels, activeRoom);
       const resolvedMatch =
         this.aiProvider.name === "local_doodle"
           ? this.matchPublicTopGuess(labels, activeRoom.currentRound.word)
@@ -557,7 +558,8 @@ export class GameServer {
         provider: this.aiProvider.name,
         difficulty: room.aiDifficulty,
         latencyMs: Date.now() - startedAt,
-        topLabels: labels.map((label) => `${label.label}:${label.confidence.toFixed(3)}`).join(", ")
+        rawTopLabels: rawLabels.map((label) => `${label.label}:${label.confidence.toFixed(3)}`).join(", "),
+        publicTopLabels: labels.map((label) => `${label.label}:${label.confidence.toFixed(3)}`).join(", ")
       });
 
       if (resolvedMatch) {
@@ -662,6 +664,31 @@ export class GameServer {
 
     const answers = buildAnswerSet(word);
     return answers.has(topLabel.normalized) ? topLabel : undefined;
+  }
+
+  private getPublicAiLabels(labels: VisionLabel[], room: RoomRuntime): VisionLabel[] {
+    if (labels.length <= 1) {
+      return labels;
+    }
+
+    const previousTopGuess = room.aiHistory.at(-1)?.labels[0]?.normalized;
+    if (!previousTopGuess) {
+      return labels;
+    }
+
+    const nextIndex = labels.findIndex((label) => label.normalized !== previousTopGuess);
+    if (nextIndex <= 0) {
+      return labels;
+    }
+
+    const nextLabels = [...labels];
+    const [nextTop] = nextLabels.splice(nextIndex, 1);
+    if (!nextTop) {
+      return labels;
+    }
+
+    nextLabels.unshift(nextTop);
+    return nextLabels;
   }
 
   private requireRoom(socketId: string): RoomRuntime | null {
